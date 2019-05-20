@@ -1,4 +1,4 @@
-package org.rug.data;
+package org.rug.data.project;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Represents a project with multiple versions.
  */
-public class Project {
+public class Project implements Iterable<Version> {
 
     private final static Logger logger = LoggerFactory.getLogger(Project.class);
 
@@ -28,11 +28,10 @@ public class Project {
     private boolean isFolderOfFolderOfJars;
     private boolean hasJars;
     private boolean hasGraphMLs;
-    private SortedMap<String, Triple<Path, Path, Graph>> versionedSystem;
-    private Map<String, Integer> versionsIndexes = new HashMap<>();
+    private SortedMap<String, Version> versionedSystem;
 
     public Project(String name){
-        this.versionedSystem = new TreeMap<>(new VersionComparator());
+        this.versionedSystem = new TreeMap<>(new StringVersionComparator());
         this.name = name;
         this.isFolderOfFolderOfJars = false;
         this.hasJars = false;
@@ -49,26 +48,19 @@ public class Project {
         Path jarDirPath = Paths.get(mainJarProjectDir);
         this.isFolderOfFolderOfJars = !containsJars(jarDirPath);
 
-        Consumer<Path> addVersion = j ->{
-            var version = parseVersion(j);
-            var t = versionedSystem.getOrDefault(version, new InputTriple(null, null));
-            t.setA(j);
-            versionedSystem.putIfAbsent(version, t);
-        };
-
         if (!isFolderOfFolderOfJars){
             Files.list(jarDirPath)
                     .filter(Files::isRegularFile)
                     .filter(f -> f.getFileName().toString().matches(".*\\.jar"))
-                    .forEach(addVersion);
+                    .forEach(j -> addVersion(j, version -> version.setJarPath(j)));
         }else{
             Files.list(jarDirPath)
                     .filter(Files::isDirectory)
-                    .forEach(addVersion);
+                    .forEach(j -> addVersion(j, version -> version.setJarPath(j)));
         }
         hasJars = true;
+        initVersionPositions();
     }
-
 
     /**
      * Adds the given directory of graphML files to the current versioned system.
@@ -82,20 +74,15 @@ public class Project {
         File dir = new File(graphMLDir);
 
         var graphMlFiles = getGraphMls(dir.toPath());
-        if (!graphMlFiles.isEmpty() && !hasJars) {
-            graphMlFiles.forEach(f -> {
-                var version = parseVersion(f);
-                var t = versionedSystem.getOrDefault(version, new InputTriple(null, null));
-                t.setB(f);
-                versionedSystem.putIfAbsent(version, t);
+        if (!graphMlFiles.isEmpty() && !hasJars)
+            graphMlFiles.forEach(f -> addVersion(f, version -> version.setGraphMLPath(f)));
+        else
+            versionedSystem.values().forEach(version -> {
+                var graphmlFile = Paths.get(graphMLDir, name + "-" + version.getVersionString() + ".graphml");
+                version.setGraphMLPath(graphmlFile);
             });
-        } else {
-            versionedSystem.forEach((version, inputTriple) -> {
-                var graphmlFile = Paths.get(graphMLDir, name + "-" + version + ".graphml");
-                inputTriple.setB(graphmlFile);
-            });
-        }
         hasGraphMLs = true;
+        initVersionPositions();
     }
 
     /**
@@ -104,15 +91,8 @@ public class Project {
      * @param version the version to return the position of.
      * @return the position of the given version in the ordered list of versions of this system.
      */
-    public Integer getVersionIndex(String version){
-        if (!versionsIndexes.keySet().equals(versionedSystem.keySet())) {
-            versionsIndexes.clear();
-            int order = 1;
-            for(var v : versionedSystem.keySet()){
-                versionsIndexes.put(v, order++);
-            }
-        }
-        return versionsIndexes.get(version);
+    public Long getVersionIndex(String version){
+        return versionedSystem.get(version).getVersionPosition();
     }
 
     /**
@@ -157,7 +137,7 @@ public class Project {
      * element, and also to corresponding system graph, saved as third element.
      * @return a sorted map as described above.
      */
-    public SortedMap<String, Triple<Path, Path, Graph>> getVersionedSystem() {
+    public SortedMap<String, Version> getVersionedSystem() {
         return versionedSystem;
     }
 
@@ -166,16 +146,61 @@ public class Project {
      * @param version the version of the system to parse smells from
      * @return the smells as a list.
      */
-    public List<ArchitecturalSmell> getArchitecturalSmellsIn(String version){
-        return ArcanDependencyGraphParser.getArchitecturalSmellsIn(versionedSystem.get(version).getC());
+    public List<ArchitecturalSmell> getArchitecturalSmellsIn(Version version){
+        var smells = ArcanDependencyGraphParser.getArchitecturalSmellsIn(version.getGraph());
+        var versionString = version.getVersionString();
+        smells.forEach(as -> as.setAffectedVersion(versionString));
+        return smells;
     }
 
-    private String parseVersion(Path f){
-        int endIndex = f.toFile().isDirectory() ? f.toString().length() : f.toString().lastIndexOf('.');
-        String version = f.toString().substring(
-                f.toString().lastIndexOf('-') + 1,
-                endIndex);
-        return version;
+    /**
+     * Returns the architectural smells in the given version.
+     * @param version the version of the system to parse smells from
+     * @return the smells as a list.
+     */
+    public List<ArchitecturalSmell> getArchitecturalSmellsIn(String version){
+        return getArchitecturalSmellsIn(versionedSystem.get(version));
+    }
+
+
+    @Override
+    public Iterator<Version> iterator() {
+        return versionedSystem.values().iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Version> action) {
+        versionedSystem.values().forEach(action);
+    }
+
+    @Override
+    public Spliterator<Version> spliterator() {
+        return versionedSystem.values().spliterator();
+    }
+
+    /**
+     * Returns the version of the system with the given version string.
+     * @param version the string denoting the version to retrieve.
+     * @return the version object mapped to the given version string.
+     */
+    public Version getVersion(String version){
+        return versionedSystem.get(version);
+    }
+
+    /**
+     * Returns the number of versions in this project.
+     * @return the counting of the versions.
+     */
+    public long numberOfVersions(){
+        return versionedSystem.size();
+    }
+
+    /**
+     * Returns a copy of the sorted set of versions in this system.
+     * @return a sorted set of versions.
+     */
+    public SortedSet<Version> versions(){
+        return new TreeSet<>(versionedSystem.values());
     }
 
     private boolean containsJars(Path dir) throws IOException{
@@ -187,26 +212,25 @@ public class Project {
     }
 
     /**
-     * This input triple lazily loads the graphml when it is first requested. This allows for Arcan to
-     * calculate the graphml and avoids errors.
+     * Initializes the version positions.
      */
-    static class InputTriple extends Triple<Path, Path, Graph>{
-
-        public InputTriple(Path jarPath, Path graphMLpath) {
-            super(jarPath, graphMLpath, null);
+    private void initVersionPositions(){
+        long counter = 1;
+        for (var version : versionedSystem.values()){
+            version.setVersionPosition(counter++);
         }
+    }
 
-        @Override
-        public Graph getC() {
-            if (super.getC() == null) {
-                this.c = TinkerGraph.open();
-                try {
-                    this.c.io(IoCore.graphml()).readGraph(getB().toAbsolutePath().toString());
-                } catch (IOException e) {
-                    logger.error("Could not read file {}", getB());
-                }
-            }
-            return super.getC();
-        }
+    /**
+     * Helper method that adds a file to the versions of the system.
+     * @param f the file to add.
+     * @param versionPathSetter a function that given a Version object, sets the path parameter(s) based
+     *                          on their file format.
+     */
+    private void addVersion(Path f, Consumer<Version> versionPathSetter){
+        var versionString = Version.parseVersion(f);
+        var version = versionedSystem.getOrDefault(versionString, new Version(f));
+        versionPathSetter.accept(version);
+        versionedSystem.putIfAbsent(version.getVersionString(), version);
     }
 }
