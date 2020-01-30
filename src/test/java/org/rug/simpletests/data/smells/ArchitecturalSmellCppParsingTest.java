@@ -1,9 +1,7 @@
 package org.rug.simpletests.data.smells;
 
-import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -24,7 +22,7 @@ public class ArchitecturalSmellCppParsingTest {
 
     @BeforeAll
     void init(){
-        g = pure.getVersion("1.0.0.0").getGraph().traversal();
+        g = pure.getVersionWith(3).getGraph().traversal();
     }
 
     @Test

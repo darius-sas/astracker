@@ -9,7 +9,6 @@ import org.rug.data.smells.ArchitecturalSmell;
 import org.rug.persistence.ComponentAffectedByGenerator;
 import org.rug.persistence.PersistenceHub;
 import org.rug.persistence.SmellCharacteristicsGenerator;
-import org.rug.persistence.SmellSimilarityDataGenerator;
 import org.rug.tracker.ASmellTracker;
 import org.rug.tracker.ISimilarityLinker;
 import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
@@ -41,7 +40,7 @@ public class ASmellTrackerTest {
         }
 
         pureOracle = new HashMap<>();
-        oracle = new long[]{ 0, 997, 108, 1040, 109};
+        oracle = new long[]{ 0, 997, 108, 1039, 109};
         i = 0;
         for (var v : pure){
             pureOracle.put(v.getVersionString(), oracle[i++]);

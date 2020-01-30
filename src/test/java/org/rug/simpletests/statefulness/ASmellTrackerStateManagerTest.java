@@ -1,6 +1,8 @@
 package org.rug.simpletests.statefulness;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.rug.data.project.IProject;
 import org.rug.simpletests.tracker.ASmellTrackerTest;
 import org.rug.statefulness.ASmellTrackerStateManager;
@@ -8,6 +10,7 @@ import org.rug.tracker.ASmellTracker;
 import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -15,7 +18,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.rug.simpletests.TestData.antlr;
 import static org.rug.simpletests.TestData.pure;
 
-public class ASmellTrackerStateManagerTest extends ASmellTrackerTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class ASmellTrackerStateManagerTest {
+
+    protected Map<String, Long> antlrOracle;
+    protected Map<String, Long> pureOracle;
+//    private Map<String, Integer> antOracle;
+
+    @BeforeAll
+    void init(){
+        antlrOracle = new HashMap<>();
+        var oracle = new long[]{0, 3, 3, 4, 5, 3, 26, 61, 61, 26, 35, 0, 113, 34, 183, 23, 44,
+                95, 125, 116, 151, 28};
+        int i = 0;
+        for(var v : antlr){
+            antlrOracle.put(v.getVersionString(), oracle[i++]);
+        }
+
+        pureOracle = new HashMap<>();
+        oracle = new long[]{ 0, 997, 108, 1039, 109};
+        i = 0;
+        for (var v : pure){
+            pureOracle.put(v.getVersionString(), oracle[i++]);
+        }
+//        antOracle = new HashMap<>();
+//        oracle = new int[]{0, 9, 29, 42, 55, 27, 97, 94, 94, 100, 53, 143, 151, 222, 234, 234, 210,
+//                           205, 167, 181, 145, 348, 231};
+//        for(var v : ant){
+//            antlrOracle.put(v.getVersionString(), oracle[i++]);
+//        }
+
+    }
 
     @Test
     void testStatefulness() throws IOException, ClassNotFoundException {
@@ -45,7 +78,7 @@ public class ASmellTrackerStateManagerTest extends ASmellTrackerTest {
         testStatefulness(antlr, antlrOracle);
     }
 
-
+    @Test
     void testStatefulnessPure() throws IOException, ClassNotFoundException {
         testStatefulness(pure, pureOracle);
     }

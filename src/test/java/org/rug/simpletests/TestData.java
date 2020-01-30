@@ -1,6 +1,5 @@
 package org.rug.simpletests;
 
-import org.rug.data.project.AbstractProject;
 import org.rug.data.project.GitProject;
 import org.rug.data.project.IProject;
 import org.rug.data.project.Project;

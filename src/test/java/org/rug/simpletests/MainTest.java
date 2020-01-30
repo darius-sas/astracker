@@ -80,20 +80,4 @@ class MainTest {
     Supplier<String> error(String projectName, String cause){
             return ()-> String.format("Error %s for project %s.", cause, projectName);
     }
-
-
-    void systemTestPyne(){
-        var projectName = "chukwa";
-        PersistenceHub.clearAll();
-        Main.main("-p", projectName, "-i", "../data-techdebt2020/output/arcanOutput/chukwa", "-gitRepo", "../data-techdebt2020/repos/chukwa",
-                "-o", "../data-techdebt2020/output", "-pC", "-pCC");
-        PersistenceHub.clearAll();
-    }
-
-    void systemTestJackrabbit(){
-        var projectName = "jackrabbit";
-        PersistenceHub.clearAll();
-        Main.main("-p", projectName, "-i", "../data/arcanOutput/jackrabbit", "-o", "../data", "-pCC", "-pC", "-rS", "-gitRepo", "/home/fenn/git/data/jackrabbit");
-        PersistenceHub.clearAll();
-    }
 }

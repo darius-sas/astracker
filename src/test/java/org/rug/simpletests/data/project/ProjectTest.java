@@ -82,8 +82,8 @@ public class ProjectTest {
     @Test
     void parseTestCpp(){
         // Parsing for CPP projects should be the same, so we only do a quick test
-        var versions = new String[] {"43c838884b79116b40d6fb6b47ba14a7769a08ab", "84f6ad77c9addbd7eedce58c2d90d5a19abb3871",
-                "bc79547ebfd65dc87822da353e0e5a576e46d80f", "cacd671de28658a4efcb14dc61baae53075e1586"};
+        var versions = new String[] {"1-84f6ad77c9addbd7eedce58c2d90d5a19abb3871", "2-cacd671de28658a4efcb14dc61baae53075e1586",
+                "3-43c838884b79116b40d6fb6b47ba14a7769a08ab", "4-bc79547ebfd65dc87822da353e0e5a576e46d80f"};
         assertEquals(Arrays.asList(versions), new ArrayList<>(pure.versions().stream().map(IVersion::getVersionString).collect(Collectors.toList())));
     }
 
@@ -110,7 +110,7 @@ public class ProjectTest {
 
         version = p.getVersion("1-a11fedc495f2d2a2e503f56ed5af13a0050d4ab5");
         smells = p.getArchitecturalSmellsIn(version);
-        assertEquals(1, smells.size());
+        assertEquals(0, smells.size());
 
         version = p.getVersion("4-a0723c8a3cefc206a7ccb15d9de1e2bf399fcff9");
         smells = p.getArchitecturalSmellsIn(version);

@@ -46,7 +46,7 @@ public class ChangeMetricsTest {
                 .has("name", "edu.rug.pyne.api.parser.Parser")
                 .next().value(PCCCMetric.NAME);
 
-        assertTrue(Math.abs(1/3d * 100 - pcccValue) < 1e-5);
+        assertTrue(Math.abs(2/3d * 100 - pcccValue) < 1e-5);
 
         graph.traversal()
                 .V().hasLabel((P<String>) P.within(VertexLabel.allTypes().stream().map(VertexLabel::toString).collect(Collectors.toSet())))
