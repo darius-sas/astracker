@@ -2,11 +2,9 @@ package org.rug;
 
 import org.rug.args.Args;
 import org.rug.data.project.*;
+import org.rug.data.project.AbstractProject.Type;
 import org.rug.persistence.*;
-import org.rug.runners.ArcanRunner;
-import org.rug.runners.ProjecSizeRunner;
-import org.rug.runners.ToolRunner;
-import org.rug.runners.TrackASRunner;
+import org.rug.runners.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,16 +28,21 @@ public class Analysis {
     private final List<ToolRunner> runners;
 
 
-    public Analysis(Args args) throws IOException, IllegalArgumentException {
+    public Analysis(Args args) throws IOException {
         this.args = args;
         this.runners = new ArrayList<>();
         init();
     }
 
-    private void init() throws IllegalArgumentException, IOException{
+    private void init() throws IOException{
         if (project == null){
             project = getProject();
-            if (isJarProject()){
+            if (isGraphMLProject()){
+                project.addGraphMLfiles(args.getHomeProjectDirectory());
+            }else if (args.runArcan()) {
+                var arcan = GitArcanRunner.newGitRunner(project, args);
+                runners.add(arcan);
+            }else if (args.project.isJar) {
                 project.addSourceDirectory(args.getHomeProjectDirectory());
                 var outputDir = args.getArcanOutDir();
                 project.forEach(version -> {
@@ -54,9 +57,7 @@ public class Analysis {
                 });
                 args.adjustProjDirToArcanOutput();
                 project.addGraphMLfiles(args.getHomeProjectDirectory());
-            }else if (isGraphMLProject()){
-                project.addGraphMLfiles(args.getHomeProjectDirectory());
-            }else {
+            } else {
                 throw new IllegalArgumentException("Cannot parse project files.");
             }
 
@@ -72,6 +73,10 @@ public class Analysis {
                     PersistenceHub.register(new ComponentAffectedByGenerator(args.getAffectedComponentsFile()));
                 }
 
+                if (args.componentCharacteristics){
+                    PersistenceHub.register(new ComponentMetricGenerator(args.getComponentCharacteristicsFile()));
+                }
+
                 PersistenceHub.register(new CondensedGraphGenerator(args.getCondensedGraphFile()));
                 PersistenceHub.register(new TrackGraphGenerator(args.getTrackGraphFileName()));
             }
@@ -85,20 +90,20 @@ public class Analysis {
 
     public IProject getProject() throws IOException {
         if (project == null) {
-            Project.Type pType;
-            if (args.isCPPproject) {
-                pType = AbstractProject.Type.CPP;
-            } else if (args.isCProject) {
-                pType = AbstractProject.Type.C;
+            Type pType;
+            if (args.project.isCPP) {
+                pType = Type.CPP;
+            } else if (args.project.isC) {
+                pType = Type.C;
             } else {
-                pType = AbstractProject.Type.JAVA;
+                pType = Type.JAVA;
             }
 
             if (args.isGitProject()) {
-                project = new GitProject(args.projectName, args.getGitRepo(), pType);
+                project = new GitProject(args.project.name, args.getGitRepo(), pType);
                 project.addSourceDirectory(args.getGitRepo().getAbsolutePath());
             } else {
-                project = new Project(args.projectName, pType);
+                project = new Project(args.project.name, pType);
             }
 
         }
@@ -109,12 +114,10 @@ public class Analysis {
         return runners;
     }
 
-    private boolean isJarProject() throws IOException {
-        return Files.walk(args.inputDirectory.toPath()).anyMatch(Project.Type.JAVA::sourcesMatch);
-    }
-
     private boolean isGraphMLProject() throws IOException{
-        return Files.walk(args.inputDirectory.toPath()).anyMatch(path -> path.getFileName().toString().matches(".*\\.graphml"));
+        try(var files = Files.walk(args.inputDirectory.toPath())){
+            return files.anyMatch(path -> path.getFileName().toString().matches(".*\\.graphml"));
+        }
     }
 
 }

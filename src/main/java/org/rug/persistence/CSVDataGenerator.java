@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public abstract class CSVDataGenerator<T> implements ICSVGenerator<T>{
     private final Path outputFile;
     protected Writer fileWriter;
     protected CSVPrinter printer;
-    protected final static Charset CHARSET = Charset.forName("UTF-8");
+    protected final static Charset CHARSET = Charset.forName(StandardCharsets.UTF_8.toString());
     private CompletableFuture<Void> future;
 
     public CSVDataGenerator(String outputFile) {
@@ -94,13 +95,6 @@ public abstract class CSVDataGenerator<T> implements ICSVGenerator<T>{
     }
 
     /**
-     * Returns the header of the underlying data.
-     * @return a array containing the headers.
-     */
-    public abstract String[] getHeader();
-
-
-    /**
      * Returns the file where to write the records of this generator.
      * @return a file.
      */
@@ -118,7 +112,7 @@ public abstract class CSVDataGenerator<T> implements ICSVGenerator<T>{
         future = CompletableFuture.runAsync(()-> {
             try {
                 if (fileWriter == null) {
-                    fileWriter = new BufferedWriter(new FileWriter(getOutputFile(), CHARSET, false));
+                    fileWriter = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(getOutputFile(), false), 165537));
                     printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(getHeader()));
                 }
                 printer.printRecords(records);
@@ -137,8 +131,10 @@ public abstract class CSVDataGenerator<T> implements ICSVGenerator<T>{
             try {
                 future.thenRun(() -> {
                     try {
-                        fileWriter.close();
+                        printer.flush();
+                        fileWriter.flush();
                         printer.close();
+                        fileWriter.close();
                     } catch (IOException e) {
                         logger.error("Could not close properly data writing on file: {}", outputFile.toAbsolutePath());
                     }

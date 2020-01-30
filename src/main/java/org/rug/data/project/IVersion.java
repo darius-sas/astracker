@@ -3,6 +3,7 @@ package org.rug.data.project;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.rug.data.characteristics.comps.SourceCodeRetriever;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 
 /**
@@ -21,13 +22,13 @@ public interface IVersion extends Comparable<IVersion> {
      * The position order of this version in comparison to the other versions in the system
      * @return a long integer representing the position of this version.
      */
-    long getVersionPosition();
+    long getVersionIndex();
 
     /**
-     * Sets the position of this version in comparison to the rest of the versions in the system.
-     * @param versionPosition The position of this version.
+     * Sets the position/index of this version in comparison to the rest of the versions in the system.
+     * @param versionIndex The index of this version.
      */
-    void setVersionPosition(long versionPosition);
+    void setVersionIndex(long versionIndex);
 
     /**
      * Retrieves the dependency graph for the version represented by this instance.
@@ -71,4 +72,10 @@ public interface IVersion extends Comparable<IVersion> {
      * This method is supposed to be used to save memory.
      */
     void clearGraph();
+
+    /**
+     * The date of this version.
+     * @return the date of this version as a string
+     */
+    String getVersionDate();
 }

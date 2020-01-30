@@ -4,37 +4,42 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.rug.data.labels.EdgeLabel;
 import org.rug.data.labels.VertexLabel;
+import org.rug.data.project.IVersion;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Calculates the PCPC (Percentage of Commits Package has Changed) metric.
- * This is the only characteristic that assumes that PCCCMetric has already been
- * computed for the current graph/version (for performance reasons).
- * The current implementation is taking the maximum value of PCCC of the vertexes belonging
- * to the current package and uses it as a the value of PCPC.
  */
 public class PCPCMetric extends AbstractComponentCharacteristic {
 
-    private String pcccName;
+    private long totalCommits = 2;
+    private Map<String, Long> packageChanges;
 
-    PCPCMetric(String name, String pcccName) {
-        super(name, VertexLabel.allComponents(), EnumSet.noneOf(EdgeLabel.class));
-        this.pcccName = pcccName;
+    public PCPCMetric() {
+        super("percCommitsPackChanged", VertexLabel.allComponents(), EnumSet.noneOf(EdgeLabel.class));
+        packageChanges = new HashMap<>(1000);
     }
 
-    PCPCMetric(String pcccName){
-        this(pcccName, pcccName);
+    @Override
+    public void calculate(IVersion version) {
+        if (version.getVersionIndex() == 1)
+            return;
+        super.calculate(version);
+        totalCommits++;
     }
 
     @Override
     protected void calculate(Vertex vertex) {
-        var pcpcValue = vertex.graph().traversal()
-                .V(vertex)
-                .in(EdgeLabel.BELONGSTO.toString())
-                .values(pcccName)
-                .max().tryNext().orElse(0d);
-        vertex.property(this.name, pcpcValue);
+        if (vertex.property(CHOMetricPackage.NAME).isPresent()) {
+            String name = vertex.value("name");
+            if (vertex.value(CHOMetricPackage.NAME)) {
+                packageChanges.compute(name, (k, v) -> v == null ? 1L : v + 1);
+            }
+            vertex.property(this.name, (packageChanges.getOrDefault(name, 0L) * 100d) / totalCommits);
+        }
     }
 
     @Override

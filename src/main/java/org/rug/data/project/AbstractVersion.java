@@ -15,12 +15,13 @@ import java.nio.file.Path;
 public abstract class AbstractVersion implements IVersion {
 
     private final static Logger logger = LoggerFactory.getLogger(Version.class);
+    protected String versionDate;
 
     private String versionString;
-    protected long versionPosition;
-    private Path sourcePath;
-    private Path graphMLPath;
-    protected Graph graph;
+    protected long versionIndex;
+    private transient Path sourcePath;
+    private transient Path graphMLPath;
+    protected transient Graph graph;
     private SourceCodeRetriever sourceCodeRetrieval;
 
     /**
@@ -56,16 +57,16 @@ public abstract class AbstractVersion implements IVersion {
      * the versionString position is 2, etc.
      * @return a long representing the order of this versionString.
      */
-    public long getVersionPosition() {
-        return versionPosition;
+    public long getVersionIndex() {
+        return versionIndex;
     }
 
     /**
      * Set the order position of this versionString.
-     * @param versionPosition The versionString position.
+     * @param versionIndex The versionString position.
      */
-    public void setVersionPosition(long versionPosition) {
-        this.versionPosition = versionPosition;
+    public void setVersionIndex(long versionIndex) {
+        this.versionIndex = versionIndex;
     }
 
     /**
@@ -158,6 +159,14 @@ public abstract class AbstractVersion implements IVersion {
         return sourceCodeRetrieval;
     }
 
+    /**
+     * Returns the date string of this version.
+     * @return a date in the format %dd-%mm-%yyyy. If no date was assigned to this version, an empty string is returned.
+     */
+    public String getVersionDate() {
+        return versionDate;
+    }
+
     @Override
     public String toString() {
         return String.format("%s: %s, %s", versionString, sourcePath, graphMLPath);
@@ -165,7 +174,7 @@ public abstract class AbstractVersion implements IVersion {
 
     @Override
     public int hashCode() {
-        return Long.hashCode(versionPosition);
+        return Long.hashCode(versionIndex);
     }
 
     @Override
@@ -174,12 +183,12 @@ public abstract class AbstractVersion implements IVersion {
             return false;
         AbstractVersion other = (AbstractVersion)obj;
         return other.versionString.equals(versionString) &&
-                other.versionPosition == versionPosition;
+                other.versionIndex == versionIndex;
     }
 
     @Override
     public int compareTo(IVersion version) {
-        return Long.compare(this.getVersionPosition(), version.getVersionPosition());
+        return Long.compare(this.getVersionIndex(), version.getVersionIndex());
     }
 
     /**
@@ -188,10 +197,18 @@ public abstract class AbstractVersion implements IVersion {
      * @return the string version of the version
      */
     public String parseVersionString(Path f){
-        int endIndex = f.toFile().isDirectory() ? f.toString().length() : f.toString().lastIndexOf('.');
-        String version = f.toString().substring(
-                f.toString().lastIndexOf('-') + 1,
-                endIndex);
+        var fileName = f.getFileName().toString();
+        int endIndex = f.toFile().isDirectory() ? fileName.length() : fileName.lastIndexOf('.');
+
+        var splits = fileName.substring(0, endIndex).split("-");
+        String version;
+        if (splits.length == 4){
+            setVersionIndex(Long.parseLong(splits[1]));
+            versionDate = String.join("-", splits[2].split("_"));
+            version = splits[3];
+        } else {
+            version = splits[1];
+        }
         return version;
     }
 

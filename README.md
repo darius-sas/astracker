@@ -15,9 +15,9 @@ git clone https://github.com/darius-sas/astracker
 cd astracker
 mvn clean compile assembly:single -DskipTests=true
 ```
-or, to deploy to a docker container as a web service:
+or, to run it as web service:
 ```
-mvn clean package -DskipTests=true
+mvn spring-boot:run
 ```
 
 This will compile the project and will create a `astracker` directory within the `./target` directory.
@@ -37,9 +37,10 @@ java -jar target/astracker-0.7-jar-with-dependencies.jar -i sample-data -p antlr
 
 Optionally, you can execute tests by running
 ```
+./test-data/git-projects/clone-repos.sh       # Clone test repositories on locally
 mvn clean compile test
 ```
-though ensure you have `test-data` in the root directory of the project.
+though ensure you have `test-data` in the root directory of the project and that you clone all the necessary git repositories (using the handy script).
 Test reports on coverage are available in `target/site` and output logs are available in `target/surefire`.
 
 ## Input formats
@@ -108,3 +109,6 @@ Explanation:
     * The *Project* sub-module contains key components that abstract the project under analysis as versions and allow a client to retrieve the source code of a class/package/file of the analysed project starting from its `Vertex` in the dependency graph.
       Different project types require different implementations of the `Project` and `Version` interfaces, though most of the functionality is common and dedicated abstract classes handled those aspect.
       These interfaces are mostly responsible of representing in-memory the project on the file system.
+
+# Notes
+If you are here because you are looking for the dataset (and scripts) of our paper at ICSME'19 `Investigating instability architectural smells evolution: an exploratory case study`, you can find it [here](https://github.com/darius-sas/data-analysis-scripts/blob/master/data/smells.csv). Scripts to read and plot the data are instead [here](https://github.com/darius-sas/data-analysis-scripts).

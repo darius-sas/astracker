@@ -8,6 +8,8 @@ import org.rug.data.characteristics.*;
 import org.rug.data.characteristics.smells.AffectedDesign;
 import org.rug.data.labels.VertexLabel;
 import org.rug.data.project.AbstractProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -27,7 +29,9 @@ import java.util.stream.Collectors;
  * have the same smell nodes ids, the same affected elements in two or more versions, this type of comparison is thus
  * necessary.
  */
-public abstract class ArchitecturalSmell implements Serializable {
+public abstract class ArchitecturalSmell {
+
+    private final static Logger logger = LoggerFactory.getLogger(ArchitecturalSmell.class);
 
     private long id;
     private String affectedVersion;
@@ -255,13 +259,6 @@ public abstract class ArchitecturalSmell implements Serializable {
         // this seems to be the preferred behaviour, because a smell is never equal to another one from the same
         // version or any other version. At least at this level of abstraction.
         return other == this;
-//        if (this == other)
-//            return true;
-//
-//        if (this.type != other.type || this.id != other.id)
-//            return false;
-//
-//        return this.smellNodes.equals(other.smellNodes) && this.affectedElements.equals(other.affectedElements);
     }
 
     private int hashCode;
@@ -301,7 +298,13 @@ public abstract class ArchitecturalSmell implements Serializable {
         }
 
         public ArchitecturalSmell getInstance(Vertex vertex, AbstractProject.Type projectType){
-            return this.smellInstantiator.apply(vertex, projectType);
+            ArchitecturalSmell smell;
+            try {
+                smell = this.smellInstantiator.apply(vertex, projectType);
+            }catch (Exception e){
+                smell = null;
+            }
+            return smell;
         }
 
         /**

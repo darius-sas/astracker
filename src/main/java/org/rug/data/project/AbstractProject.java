@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -72,6 +73,14 @@ public abstract class AbstractProject implements IProject {
         versionedSystem.values().forEach(action);
     }
 
+    long counter = 1;
+    public void forEach(BiConsumer<? super IVersion, Long> action){
+        for (IVersion version : versionedSystem.values()) {
+            action.accept(version, counter++);
+        }
+        counter = 1;
+    }
+
     @Override
     public Spliterator<IVersion> spliterator() {
         return versionedSystem.values().spliterator();
@@ -93,7 +102,7 @@ public abstract class AbstractProject implements IProject {
      */
     @Override
     public IVersion getVersionWith(long versionPosition) {
-        return versionedSystem.values().stream().filter(v -> v.getVersionPosition() == versionPosition).findFirst().orElse(null);
+        return versionedSystem.values().stream().filter(v -> v.getVersionIndex() == versionPosition).findFirst().orElse(null);
     }
 
     /**
@@ -120,7 +129,7 @@ public abstract class AbstractProject implements IProject {
      */
     @Override
     public Long getVersionIndex(String version){
-        return versionedSystem.get(version).getVersionPosition();
+        return versionedSystem.get(version).getVersionIndex();
     }
 
     /**
@@ -133,13 +142,18 @@ public abstract class AbstractProject implements IProject {
         return versionedSystem;
     }
 
+    @Override
+    public void setVersionedSystem(SortedMap<String, IVersion> versionedSystem) {
+        this.versionedSystem = versionedSystem;
+    }
+
     /**
      * Initializes the version positions.
      */
     protected void initVersionPositions(){
         long counter = 1;
         for (var version : getVersionedSystem().values()){
-            version.setVersionPosition(counter++);
+            version.setVersionIndex(counter++);
         }
     }
 
@@ -179,7 +193,9 @@ public abstract class AbstractProject implements IProject {
      * @throws IOException
      */
     protected List<Path> getGraphMls(Path dir) throws IOException{
-        return Files.list(dir).filter(f -> Files.isRegularFile(f) && f.getFileName().toString().matches(".*\\.graphml")).collect(Collectors.toList());
+        try(var list = Files.list(dir)){
+            return list.filter(f -> Files.isRegularFile(f) && f.getFileName().toString().matches(".*\\.graphml")).collect(Collectors.toList());
+        }
     }
 
     /**

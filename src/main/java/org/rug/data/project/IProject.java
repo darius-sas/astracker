@@ -4,7 +4,9 @@ import org.rug.data.smells.ArchitecturalSmell;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.BiConsumer;
 
 /**
  * Represents a project that can be analysed.
@@ -79,7 +81,29 @@ public interface IProject extends Iterable<IVersion> {
     /**
      * Returns the version with the given versionPosition.
      * @param versionPosition the position of the version as an index.
-     * @return the version object for which {@link IVersion#getVersionPosition()} equals the given value.
+     * @return the version object for which {@link IVersion#getVersionIndex()} equals the given value.
      */
     IVersion getVersionWith(long versionPosition);
+
+    /**
+     * Returns a sorted map where keys are versions of the system and values are triples
+     * where the first element is the directory, or jar file, corresponding to the graphml file, saved as the second
+     * element, and also to corresponding system graph, saved as third element.
+     * @return a sorted map as described above.
+     */
+    SortedMap<String, IVersion> getVersionedSystem();
+
+    /**
+     * Set the sorted map representing the versions of this project.
+     * @param versionedSystem the map.
+     * @see #getVersionedSystem()
+     */
+    void setVersionedSystem(SortedMap<String, IVersion> versionedSystem);
+
+    /**
+     * Iterates over the versions of the system and returns an index of the version.
+     * Note that this index might differ from the versionPosition.
+     * @param action the function to execute.
+     */
+    void forEach(BiConsumer<? super IVersion, Long> action);
 }

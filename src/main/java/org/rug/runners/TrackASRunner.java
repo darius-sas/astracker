@@ -2,6 +2,7 @@ package org.rug.runners;
 
 import org.rug.data.characteristics.ComponentCharacteristicSet;
 import org.rug.data.project.IProject;
+import org.rug.data.project.IVersion;
 import org.rug.data.smells.ArchitecturalSmell;
 import org.rug.persistence.*;
 import org.rug.tracker.ASmellTracker;
@@ -37,16 +38,20 @@ public class TrackASRunner extends ToolRunner {
         logger.info("Starting tracking architectural smells of {} for {} versions", project.getName(), project.numberOfVersions());
         logger.info("Tracking non consecutive versions: {}", trackNonConsecutiveVersions ? "yes" : "no");
 
-        project.forEach(version -> {
-            logger.info("Tracking version {} (n. {} of {})", version.getVersionString(), version.getVersionPosition(), project.numberOfVersions());
+        project.forEach((version, index) -> {
+            logger.info("Tracking version {} (n. {} of {})", version.getVersionString(), index, project.numberOfVersions());
             List<ArchitecturalSmell> smells = project.getArchitecturalSmellsIn(version);
 
+            logger.debug("Computing component characteristics...");
             componentCharacteristics.forEach(c -> c.calculate(version));
+            logger.debug("Computing smell characteristics...");
             smells.forEach(ArchitecturalSmell::calculateCharacteristics);
 
+            logger.debug("Tracking smells...");
             tracker.track(smells, version);
 
             logger.info("Linked {} smells out of a total of {} in this version.", tracker.smellsLinked(), smells.size());
+            logger.debug("Sending characteristics to data generators...");
             PersistenceHub.sendToAndWrite(SmellSimilarityDataGenerator.class, tracker);
             PersistenceHub.sendToAndWrite(ComponentMetricGenerator.class, version);
             version.clearGraph();

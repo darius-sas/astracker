@@ -4,6 +4,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.rug.data.characteristics.comps.ChangeMetrics;
 import org.rug.data.characteristics.comps.PCCCMetric;
 import org.rug.data.labels.VertexLabel;
 import org.rug.data.project.AbstractProject;
@@ -25,7 +26,7 @@ public class PCCCMetricTest {
         pyne.addSourceDirectory("/home/fenn/git/pyne");
         pyne.addGraphMLfiles("./test-data/output/arcanOutput/pyne");
 
-        var pccc = new PCCCMetric();
+        var pccc = new PCCCMetric(ChangeMetrics.NAME);
 
         pyne.forEach(pccc::calculate);
 

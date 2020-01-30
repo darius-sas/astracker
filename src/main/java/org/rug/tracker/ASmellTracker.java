@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 /**
  * Tracks incrementally the architectural smells and saves them internally.
  */
-public class ASmellTracker implements Serializable {
+public class ASmellTracker implements Serializable{
 
     public static final String NAME = "name";
     public static final String SMELL = "smell";
     public static final String VERSION = "version";
-    public static final String VERSION_POSITION = "versionPosition";
+    public static final String VERSION_INDEX = "versionIndex";
     public static final String SMELL_OBJECT = "smellObject";
     public static final String LATEST_VERSION = "latestVersion";
     public static final String EVOLVED_FROM = "evolvedFrom";
@@ -44,19 +44,24 @@ public class ASmellTracker implements Serializable {
     public static final String AGE = "age";
     public static final String NA = "NA";
     public static final String FIRST_APPEARED = "firstAppeared";
+    public static final String LAST_DETECTED = "lastDetected";
+    public static final String FIRST_APPEARED_INDEX = "firstAppearedIndex";
+    public static final String LAST_DETECTED_INDEX  = "lastDetectedIndex";
     public static final String SMELL_ID = "smellId";
     public static final String COMPONENT_TYPE = "componentType";
     public static final String TAIL = "tail";
     public static final String SMELL_STATUS = "status";
+    public static final String COMPONENT_CHARACTERISTIC = "componentCharacteristic";
+    public static final String LATEST_VERSION_INDEX = "latestVersionIndex";
 
-    private Graph trackGraph;
-    private Graph condensedGraph;
-    private Vertex tail;
+    private transient Graph trackGraph;
+    private transient Graph condensedGraph;
+    private transient Vertex tail;
     private long uniqueSmellID;
     private ISimilarityLinker scorer;
     private DecimalFormat decimal;
 
-    private final boolean trackNonConsecutiveVersions;
+    private boolean trackNonConsecutiveVersions;
 
     /**
      * Builds an instance of this tracker.
@@ -71,8 +76,8 @@ public class ASmellTracker implements Serializable {
         this.trackNonConsecutiveVersions = trackNonConsecutiveVersions;
         this.scorer = scorer;
         this.decimal = new DecimalFormat("0.0#");
-
     }
+
 
     /**
      * Builds an instance of this tracker that does not tracks smells through non-consecutive versions.
@@ -109,6 +114,8 @@ public class ASmellTracker implements Serializable {
                 Vertex predecessor = g1.V(tail).out().has(SMELL_OBJECT, t.getA()).next();
                 Vertex successor = g1.addV(SMELL)
                         .property(VERSION, version.getVersionString())
+                        .property(VERSION_INDEX, version.getVersionIndex())
+                        .property(SMELL_ID, t.getB().getId())
                         .property(SMELL_OBJECT, t.getB()).next();
 
                 g1.V(tail).outE().where(otherV().is(predecessor)).drop().iterate();
@@ -123,25 +130,28 @@ public class ASmellTracker implements Serializable {
             }
 
         }
-        nextVersionSmells.forEach(s -> addNewDynasty(s, version.getVersionString()));
+        nextVersionSmells.forEach(s -> addNewDynasty(s, version.getVersionString(), version.getVersionIndex()));
         tail.property(LATEST_VERSION, version.getVersionString());
+        tail.property(LATEST_VERSION_INDEX, version.getVersionIndex());
         updateCondensedGraph();
         clearSmellObjects();
     }
-
 
     /**
      * Begins a new dynasty for the given AS at the given starting version
      * @param s the starter of the dynasty
      * @param startingVersion the version
      */
-    private void addNewDynasty(ArchitecturalSmell s, String startingVersion) {
+    private void addNewDynasty(ArchitecturalSmell s, String startingVersion, long startingVersionIndex) {
         GraphTraversalSource g = trackGraph.traversal();
         Vertex successor = g.addV(SMELL)
                 .property(VERSION, startingVersion)
+                .property(VERSION_INDEX, startingVersionIndex)
+                .property(SMELL_ID, s.getId())
                 .property(SMELL_OBJECT, s).next();
         Vertex head = g.addV(HEAD)
                 .property(VERSION, startingVersion)
+                .property(VERSION_INDEX, startingVersionIndex)
                 .property(UNIQUE_SMELL_ID, uniqueSmellID++).next();
         g.addE(STARTED_IN).from(head).to(successor).next();
         g.addE(LATEST_VERSION).from(tail).to(successor).next();
@@ -154,7 +164,9 @@ public class ASmellTracker implements Serializable {
     private void endDynasty(ArchitecturalSmell smell){
         GraphTraversalSource g = trackGraph.traversal();
         Vertex lastHeir = g.V().has(SMELL_OBJECT, smell).next();
-        Vertex end = g.addV(END).property(VERSION, currentVersion()).next();
+        Vertex end = g.addV(END).property(VERSION, currentVersion())
+                .property(VERSION_INDEX, currentVersionIndex())
+                .next();
         g.V(tail).outE().where(otherV().is(lastHeir)).drop().iterate();
         g.addE(END).from(end).to(lastHeir).next();
     }
@@ -173,6 +185,14 @@ public class ASmellTracker implements Serializable {
      */
     public String currentVersion(){
         return tail.property(LATEST_VERSION).orElse(NA).toString();
+    }
+
+    /**
+     * Returns the latest version of update of this tracker.
+     * @return a string representing the version or {@link #NA} if no current version is available.
+     */
+    public String currentVersionIndex(){
+        return tail.property(LATEST_VERSION_INDEX).orElse(NA).toString();
     }
 
     /**
@@ -197,7 +217,8 @@ public class ASmellTracker implements Serializable {
                     .has(UNIQUE_SMELL_ID, smellUID)
                     .tryNext().orElseGet(() -> gs.addV(SMELL)
                             .property(UNIQUE_SMELL_ID, smellUID)
-                            .property(FIRST_APPEARED, smellVertex.value(VERSION)).next());
+                            .property(FIRST_APPEARED, smellVertex.value(VERSION))
+                            .property(FIRST_APPEARED_INDEX, smellVertex.value(VERSION_INDEX)).next());
             ArchitecturalSmell smellObject = smellVertex.value(SMELL_OBJECT);
             if (!condensedSmell.property(SMELL_TYPE).isPresent()){
                 condensedSmell.property(SMELL_TYPE, smellObject.getType().toString());
@@ -207,6 +228,7 @@ public class ASmellTracker implements Serializable {
 
             gs.addE(HAS_CHARACTERISTIC).from(condensedSmell).to(characteristics)
                     .property(VERSION, smellVertex.value(VERSION))
+                    .property(VERSION_INDEX, smellVertex.value(VERSION_INDEX))
                     .property(SMELL_ID, smellObject.getId()).next();
 
             for(var affectedComp : smellObject.getAffectedElements()){
@@ -218,22 +240,26 @@ public class ASmellTracker implements Serializable {
                                 .property(COMPONENT_TYPE, smellObject.getLevel().toString()).next());
                 gs.addE(AFFECTS).from(condensedSmell).to(component)
                         .property(VERSION, smellVertex.value(VERSION))
+                        .property(VERSION_INDEX, smellVertex.value(VERSION_INDEX))
                         .next();
                 var cce = gs.V(component).outE(HAS_CHARACTERISTIC)
                         .has(VERSION, smellVertex.value(VERSION).toString())
                         .tryNext();
                 if (cce.isEmpty()){
-                    final var componentCharacteristics = gs.addV("componentCharacteristic").next();
-                    affectedComp.keys().stream().filter(k -> !k.equals("name")).forEach(k->
+                    final var componentCharacteristics = gs.addV(COMPONENT_CHARACTERISTIC).next();
+                    affectedComp.keys().stream().filter(k -> !k.equals(NAME)).forEach(k->
                             componentCharacteristics.property(k, affectedComp.value(k))
                     );
                     gs.addE(HAS_CHARACTERISTIC).from(component).to(componentCharacteristics)
-                            .property(VERSION, smellVertex.value(VERSION)).next();
+                            .property(VERSION, smellVertex.value(VERSION))
+                            .property(VERSION_INDEX, smellVertex.value(VERSION_INDEX))
+                            .next();
                 }
             }
             long age = condensedSmell.<Long>property(AGE).orElse(0L);
             condensedSmell.property(AGE, ++age);
-            condensedSmell.property("lastDetected", smellVertex.value(VERSION));
+            condensedSmell.property(LAST_DETECTED, smellVertex.value(VERSION));
+            condensedSmell.property(LAST_DETECTED_INDEX, smellVertex.value(VERSION_INDEX));
             smellVertex.property(SMELL_STATUS, "processed");
         }
     }
@@ -292,4 +318,15 @@ public class ASmellTracker implements Serializable {
         return trackGraph;
     }
 
+    public void setTrackGraph(Graph trackGraph) {
+        this.trackGraph = trackGraph;
+    }
+
+    public void setCondensedGraph(Graph condensedGraph) {
+        this.condensedGraph = condensedGraph;
+    }
+
+    public void setTail(Vertex tail) {
+        this.tail = tail;
+    }
 }

@@ -35,7 +35,7 @@ class MainTest {
             Files.delete(Paths.get(outputDir, "arcanOutput", projectName));
         } catch (IOException e) {}
 
-        Main.main(new String[]{"-p", projectName, "-i", inputDirJars, "-o", outputDir, "-rA", arcanCommand, "-pC", "-pS"});
+        Main.main("-p", projectName, "-i", inputDirJars, "-o", outputDir, "-rA", arcanCommand, "-pC", "-pS");
 
         assertTrue(Files.exists(Paths.get(outputDir, "arcanOutput", projectName)),
                 error(projectName, "checking existence arcanOutput directory"));
@@ -43,6 +43,11 @@ class MainTest {
                 error(projectName, "checking existence smell characteristics"));
         assertTrue(Files.exists(Paths.get(outputDir, "trackASOutput", projectName, "similarity-scores-consecOnly.csv")),
                 error(projectName, "checking existence score similarity file"));
+    }
+
+    @Test
+    void executeMainProjectGitArcan(){
+        Main.main("-p", "pyne", "-i", "./test-data/output/arcanOutput/pyne", "-o", "./test-data/output/", "-gitRepo", "./test-data/git-projects/pyne", "-pC", "-pCC");
     }
 
     @Test
@@ -63,7 +68,7 @@ class MainTest {
 
         PersistenceHub.clearAll();
 
-        Main.main(new String[]{"-p", projectName, "-i", inputDirGraphMLs, "-o", outputDir, "-pC", "-pS", isCPPproject ? "-cppP" : "-jP" });
+        Main.main(new String[]{"-p", projectName, "-i", inputDirGraphMLs+"/"+projectName, "-o", outputDir, "-pC", "-pS", isCPPproject ? "-cppP" : "-jP" });
 
         assertTrue(Files.exists(Paths.get(outputDir, "trackASOutput", projectName, "smell-characteristics-consecOnly.csv")),
                 error(projectName, "checking existence of smell characteristics file"));
@@ -78,19 +83,17 @@ class MainTest {
 
 
     void systemTestPyne(){
-        var projectName = "pyne";
-        try {
-            Files.delete(Paths.get(outputDir, "trackASOutput", projectName));
-        } catch (IOException e) {}
+        var projectName = "chukwa";
         PersistenceHub.clearAll();
-        Main.main(new String[]{"-p", projectName, "-i", "./test-output/", "-gitRepo", "./pyne", "-o", "../test-output", "-pC", "-rS"});
+        Main.main("-p", projectName, "-i", "../data-techdebt2020/output/arcanOutput/chukwa", "-gitRepo", "../data-techdebt2020/repos/chukwa",
+                "-o", "../data-techdebt2020/output", "-pC", "-pCC");
         PersistenceHub.clearAll();
     }
 
-    void systemTestTics(){
-        var projectName = "tics";
+    void systemTestJackrabbit(){
+        var projectName = "jackrabbit";
         PersistenceHub.clearAll();
-        Main.main(new String[]{"-p", projectName, "-i", "../projects-analyses/arcanOutput", "-o", "../projects-analyses", "-pC", "-rS"});
+        Main.main("-p", projectName, "-i", "../data/arcanOutput/jackrabbit", "-o", "../data", "-pCC", "-pC", "-rS", "-gitRepo", "/home/fenn/git/data/jackrabbit");
         PersistenceHub.clearAll();
     }
 }

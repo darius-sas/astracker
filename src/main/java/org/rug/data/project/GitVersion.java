@@ -10,9 +10,8 @@ import java.nio.file.Path;
 
 public class GitVersion extends AbstractVersion {
 
-    private Repository repository;
-    private final CheckoutCommand checkoutCommand;
-    private String versionDate;
+    private transient Repository repository;
+    private transient CheckoutCommand checkoutCommand;
     private String commitName;
     private boolean isCheckedOut;
 
@@ -51,18 +50,10 @@ public class GitVersion extends AbstractVersion {
         var fileName = f.getFileName().toString();
         int endIndex = f.toFile().isDirectory() ? fileName.length() : fileName.lastIndexOf('.');
         var splits = fileName.substring(0, endIndex).split("-");
-        setVersionPosition(Long.parseLong(splits[1]));
-        versionDate = String.join("-", splits[2]);
+        setVersionIndex(Long.parseLong(splits[1]));
+        versionDate = String.join("-", splits[2].split("_"));
         commitName = splits[3];
-        return String.join("-", String.valueOf(versionPosition), commitName);
-    }
-
-    /**
-     * Returns the date string of this version.
-     * @return a date in the format %dd-%mm-%yyyy.
-     */
-    public String getVersionDate() {
-        return versionDate;
+        return String.join("-", String.valueOf(versionIndex), commitName);
     }
 
     /**
@@ -89,4 +80,5 @@ public class GitVersion extends AbstractVersion {
     public String toString() {
         return String.format("%s: %s", getVersionString(), getGraphMLPath().toString());
     }
+
 }
