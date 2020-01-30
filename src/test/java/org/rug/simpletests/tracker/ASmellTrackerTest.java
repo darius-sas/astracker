@@ -33,15 +33,15 @@ public class ASmellTrackerTest {
     @BeforeAll
     void init(){
         antlrOracle = new HashMap<>();
-        var oracle = new long[]{0, 3, 3, 4, 5, 3, 26, 61, 61, 26, 35, 0, 113, 36, 183, 24, 44,
-                               95, 125, 117, 151, 29};
+        var oracle = new long[]{0, 3, 3, 4, 5, 3, 26, 61, 61, 26, 35, 0, 113, 34, 183, 23, 44,
+                               95, 125, 116, 151, 28};
         int i = 0;
         for(var v : antlr){
             antlrOracle.put(v.getVersionString(), oracle[i++]);
         }
 
         pureOracle = new HashMap<>();
-        oracle = new long[]{ 0, 132, 132, 132, 132}; //TODO test files have changed this needs to be updated
+        oracle = new long[]{ 0, 997, 108, 1040, 109};
         i = 0;
         for (var v : pure){
             pureOracle.put(v.getVersionString(), oracle[i++]);
@@ -60,7 +60,7 @@ public class ASmellTrackerTest {
         trackTestProject(antlr, antlrOracle);
     }
 
-
+    @Test
     void trackTestPure() {
         trackTestProject(pure, pureOracle);
     }
@@ -70,16 +70,17 @@ public class ASmellTrackerTest {
         ISimilarityLinker scorer = new SimpleNameJaccardSimilarityLinker();
         ASmellTracker tracker = new ASmellTracker(scorer, false);
         PersistenceHub.clearAll();
-        PersistenceHub.register(new SmellSimilarityDataGenerator(Paths.get(trackASOutputDir, project.getName(), "jaccard-scores-consecutives-only.csv").toString()));
-        PersistenceHub.register(new SmellCharacteristicsGenerator(Paths.get(trackASOutputDir, project.getName(), "smells-characteristics.csv").toString(), project)); // this test is out of date, added null to allow compilation
+        //PersistenceHub.register(new SmellSimilarityDataGenerator(Paths.get(trackASOutputDir, project.getName(), "jaccard-scores-consecutives-only.csv").toString()));
+        //PersistenceHub.register(new SmellCharacteristicsGenerator(Paths.get(trackASOutputDir, project.getName(), "smells-characteristics.csv").toString(), project));
         var gen = new ComponentAffectedByGenerator(Paths.get(trackASOutputDir, project.getName(), "affectedComponents.csv").toString());
 
         for (var version : project){
             List<ArchitecturalSmell> smells = project.getArchitecturalSmellsIn(version);
-            smells.forEach(ArchitecturalSmell::calculateCharacteristics);
+            //smells.forEach(ArchitecturalSmell::calculateCharacteristics);
             tracker.track(smells, version);
+            System.out.println(version);
             assertEquals((long)oracle.get(version.getVersionString()), tracker.smellsLinked());
-            PersistenceHub.sendToAndWrite(SmellSimilarityDataGenerator.class, tracker);
+            //PersistenceHub.sendToAndWrite(SmellSimilarityDataGenerator.class, tracker);
         }
         gen.accept(tracker);
         PersistenceHub.sendToAndWrite(SmellCharacteristicsGenerator.class, tracker);

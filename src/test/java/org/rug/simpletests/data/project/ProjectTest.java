@@ -99,20 +99,20 @@ public class ProjectTest {
 
     @Test
     void gitProjectTest() throws IOException {
-        IProject p = new GitProject("pyne", "/home/fenn/git/pyne", AbstractProject.Type.JAVA);
-        p.addSourceDirectory("/home/fenn/git/pyne/pyne-api/src/main/java/");
+        IProject p = new GitProject("pyne", "./test-data/git-projects/pyne/", AbstractProject.Type.JAVA);
+        p.addSourceDirectory("./test-data/git-projects/pyne/pyne-api/src/main/java/");
         p.addGraphMLfiles("test-data/output/arcanOutput/pyne");
-        assertEquals(3, p.numberOfVersions());
+        assertEquals(6, p.numberOfVersions());
 
-        var version = p.getVersion("2-9b56310796d3924587bdd2e8fcc698e23225ae24");
+        var version = p.getVersion("3-9b56310796d3924587bdd2e8fcc698e23225ae24");
         var smells = p.getArchitecturalSmellsIn(version);
         assertEquals(2, smells.size());
 
-        version = p.getVersion("1-16e03e9ea1d416c8f3cd3ab79273245ce631ac92");
+        version = p.getVersion("1-a11fedc495f2d2a2e503f56ed5af13a0050d4ab5");
         smells = p.getArchitecturalSmellsIn(version);
         assertEquals(1, smells.size());
 
-        version = p.getVersion("3-a0723c8a3cefc206a7ccb15d9de1e2bf399fcff9");
+        version = p.getVersion("4-a0723c8a3cefc206a7ccb15d9de1e2bf399fcff9");
         smells = p.getArchitecturalSmellsIn(version);
         assertEquals(2, smells.size());
 

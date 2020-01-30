@@ -19,7 +19,7 @@ public class GitProject extends AbstractProject {
      * @param gitDir      the .git directory or the directory containing the .git directory.
      * @param projectType the type of the project (programming language).
      */
-    public GitProject(String name, String gitDir, Type projectType) throws IOException {
+    public GitProject(String name, String gitDir, Type projectType) {
         this(name, new File(gitDir), projectType);
     }
 
@@ -30,9 +30,13 @@ public class GitProject extends AbstractProject {
      * @param gitDir      the .git directory or the directory containing the .git directory.
      * @param projectType the type of the project (programming language).
      */
-    public GitProject(String name, File gitDir, Type projectType) throws IOException {
+    public GitProject(String name, File gitDir, Type projectType) {
         super(name, projectType, new StringCommitComparator());
-        this.git = Git.open(gitDir);
+        try {
+            this.git = Git.open(gitDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

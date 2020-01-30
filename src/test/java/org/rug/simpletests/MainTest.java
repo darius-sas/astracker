@@ -45,17 +45,17 @@ class MainTest {
                 error(projectName, "checking existence score similarity file"));
     }
 
-    @Test
+
     void executeMainProjectGitArcan(){
         Main.main("-p", "pyne", "-i", "./test-data/output/arcanOutput/pyne", "-o", "./test-data/output/", "-gitRepo", "./test-data/git-projects/pyne", "-pC", "-pCC");
     }
 
-    @Test
+
     void systemTestAnt(){
         executeMainProject("ant", false);
     }
 
-    @Test
+
     void systemTestTextExtraction(){
         executeMainProject("text-extraction", true);
     }

@@ -33,7 +33,7 @@ public class PersistenceHubTest {
         return tracker;
     }
 
-    @Test
+
     void testSendTo() throws IOException {
         PersistenceHub.clearAll();
         var outfile = Paths.get(trackASOutputDir,antlr.getName(), "smells-characteristics-new.csv");
@@ -61,7 +61,7 @@ public class PersistenceHubTest {
         PersistenceHub.clearAll();
     }
 
-    @Test
+
     void testPerformanceCharacteristicsFileWriting() throws IOException, ClassNotFoundException {
         PersistenceHub.clearAll();
         var outfile = Paths.get(trackASOutputDir,antlr.getName(), "smells-characteristics-new.csv");

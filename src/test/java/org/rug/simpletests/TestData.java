@@ -1,5 +1,6 @@
 package org.rug.simpletests;
 
+import org.rug.data.project.AbstractProject;
 import org.rug.data.project.GitProject;
 import org.rug.data.project.IProject;
 import org.rug.data.project.Project;
@@ -12,9 +13,9 @@ public class TestData {
     private final static String antlrProjectDir = "./test-data/input/antlr";
     private final static String antlrGraphMLDir = "./test-data/output/arcanOutput/antlr";
 
-    public final static IProject pure = new Project("pure", Project.Type.CPP);
     private final static String pureGraphMLDir = "./test-data/output/arcanOutput/pure";
     private final static String pureSourcesDir = "./test-data/git-projects/pure";
+    public final static IProject pure = new GitProject("pure", pureSourcesDir, Project.Type.CPP);
 
     public final static String trackASOutputDir = "./test-data/output/trackASOutput/";
 
@@ -29,6 +30,7 @@ public class TestData {
         }
 
         try {
+            pure.addSourceDirectory(pureSourcesDir);
             pure.addGraphMLfiles(pureGraphMLDir);
         } catch (IOException e){
             System.err.println("Cannot load pure project for tests execution. Are you sure the paths are correct?");
