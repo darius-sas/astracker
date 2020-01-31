@@ -10,18 +10,25 @@ The requirements to install and execute the application are:
 
 # Installation
 The installation process is simple, but it requires `git` and `mvn` (Maven) to be installed on your system.
-```bash
+```shell script
 git clone https://github.com/darius-sas/astracker
 cd astracker
 mvn clean compile assembly:single -DskipTests=true
 ```
-or, to run it as web service:
-```
+and a JAR file will be created in the `target` directory.
+
+Alternatively, ASTracker can be executed as a web service:
+```shell script
 mvn spring-boot:run
 ```
-
-This will compile the project and will create a `astracker` directory within the `./target` directory.
-The directory will contain a `.jar` and a `lib` folder, namely the executable and the necessary libraries.
+and even built as a Docker image (ensure you have Docker installed) using:
+```shell script
+sudo mvn compile jib:dockerBuild
+```
+then run the Docker image using:
+```shell script
+sudo docker run -p 8080:8080 -t astracker
+```
 
 # Usage
 ASTracker can be run as any standard executable `.jar` file:
@@ -31,12 +38,12 @@ java -jar astracker.jar -help
 This command will provide further information on the available commands.
 
 As an example, try running the following command on the folder `sample-data`, which contains the `.grampml`, describing the Architectural smells affecting multiple versions of Antlr:
-```bash
-java -jar target/astracker-0.7-jar-with-dependencies.jar -i sample-data -p antlr -o sample-data -pC
+```shell script
+java -jar target/astracker-0.9.0-jar-with-dependencies.jar -i sample-data -p antlr -o sample-data -pC
 ```
 
 Optionally, you can execute tests by running
-```
+```shell script
 ./test-data/git-projects/clone-repos.sh       # Clone test repositories on locally
 mvn clean compile test
 ```
