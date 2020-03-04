@@ -3,6 +3,7 @@ package org.rug.web;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.rug.tracker.ASmellTracker;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,28 @@ public class System {
             graph.traversal().V().hasLabel(ASmellTracker.SMELL).forEachRemaining(v -> smells.add(new Smell(v)));
         }
         return smells;
+    }
+
+    /**
+     * All the smells in this system throughout all the versions.
+     *
+     * @return a TreeMap wth a list of smells.
+     */
+    public TreeMap<String, List<Smell>> getSystemSmells() {
+        var map = new TreeMap<String, List<Smell>>();
+        map.put("smells", getSmells());
+        return map;
+    }
+
+    /**
+     * All the smells in this system throughout the mentioned versions.
+     *
+     * @return a TreeMap wth a list of smells.
+     */
+    public TreeMap<String, List<Smell>> getSystemSmells(long startIndex, long endIndex) {
+        var map = new TreeMap<String, List<Smell>>();
+        map.put("smells", getSmells(startIndex, endIndex));
+        return map;
     }
 
     /**

@@ -35,13 +35,15 @@ public class Analysis {
     }
 
     private void init() throws IOException{
-        if (project == null){
+        if (project == null) {
             project = getProject();
-            if (isGraphMLProject()){
-                project.addGraphMLfiles(args.getHomeProjectDirectory());
-            }else if (args.runArcan()) {
+
+            if (args.runArcan()) {
                 var arcan = GitArcanRunner.newGitRunner(project, args);
                 runners.add(arcan);
+                System.out.println("Arcan runner was added");
+            }else if (isGraphMLProject()){
+                    project.addGraphMLfiles(args.getHomeProjectDirectory());
             }else if (args.project.isJar) {
                 project.addSourceDirectory(args.getHomeProjectDirectory());
                 var outputDir = args.getArcanOutDir();
@@ -62,6 +64,7 @@ public class Analysis {
             }
 
             if (args.runTracker()){
+                System.out.println("ASTracker added!");
                 runners.add(new TrackASRunner(project, args.trackNonConsecutiveVersions));
 
                 if (args.similarityScores) {
