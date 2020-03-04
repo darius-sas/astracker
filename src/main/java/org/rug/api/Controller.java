@@ -3,19 +3,27 @@ package org.rug.api;
 import org.rug.api.helpers.ArgumentMapper;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
 /**
- * Class used as the main controller for the web interface. Will handle the mapping to specific URLs.
+ * Class used as the controller for the API. Will handle the mapping to specific URLs.
  */
 @RestController
 public class Controller extends HttpServlet {
 
+    /**
+     * Can be used to perform an analysis on a GitHub repository. Required parameters are
+     * 'project' -> the link to the GitHub repository (ending in .git)
+     * 'language' -> the language of the project (eg. java)
+     *
+     * @param requestParameters
+     * @param response
+     * @return String
+     * @throws IOException
+     */
     @RequestMapping(value = {"/analyse"}, method = RequestMethod.GET,  produces={ "application/json"})
     public String runASTracker(
             @RequestParam Map<String,String> requestParameters,
@@ -31,6 +39,14 @@ public class Controller extends HttpServlet {
         return result;
     }
 
+    /**
+     * Can be accessed to see what CLI arguments have been mapped by the request arguments.
+     *
+     * @param requestParameters
+     * @param response
+     * @return String
+     * @throws IOException
+     */
     @RequestMapping(value = {"/getCLIargs"}, method = RequestMethod.GET,  produces={ "application/json"})
     public String runASTrackerString(
             @RequestParam Map<String,String> requestParameters,
@@ -39,17 +55,5 @@ public class Controller extends HttpServlet {
         var runner = new ASTrackerRunner(new ArgumentMapper(requestParameters));
         var result = runner.getCLIArgs();
         return result;
-    }
-
-    @RequestMapping(value = {"/help"}, method = RequestMethod.GET, produces={ "application/json"})
-    public String getHelp(@RequestParam Map<String,String> requestParameters) {
-        var runner = new ASTrackerRunner(new ArgumentMapper(requestParameters));
-        return runner.getHelp();
-    }
-
-    @RequestMapping("/helpMe")
-    public String helpMe(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
-    {
-        return("req.getQueryString() output : ");
     }
 }

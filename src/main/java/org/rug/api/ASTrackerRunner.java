@@ -48,8 +48,7 @@ public class ASTrackerRunner {
             args = fetcher.fetchProject(args);
 
             if (args.getGitLink() == null) {
-                //TODO: some error handling here?
-                return "Something went wrong when cloning the project.";
+                return "Something went wrong when cloning the project: " + args.getGitLink();
             }
         }
 
@@ -58,7 +57,7 @@ public class ASTrackerRunner {
 
         boolean errorsOccurred = false;
         String errorRunnerName = "";
-        long start = System.nanoTime();
+
         for (var r : analysis.getRunners()) {
             int exitCode = r.run();
             errorsOccurred = exitCode != 0;
@@ -68,16 +67,17 @@ public class ASTrackerRunner {
             }
         }
         if (errorsOccurred) {
-            return "Unexpected errors have occurred while running runner" + errorRunnerName;
+            return "Unexpected errors have occurred while running runner " + errorRunnerName;
         }
 
         PersistenceHub.closeAll();
-        return "Writing to output directory...";
+        return "Writing to output directory.";
     }
 
     public String getCLIArgs() {
         return this.mapper.toString();
     }
+
     /**
      * Will return the help menu as if using -help in the CLI
      *

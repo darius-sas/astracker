@@ -20,6 +20,7 @@ public class ArgumentMapper {
     public ArgumentMapper(Map<String,String> requestParameters) {
         this.requestParameters = requestParameters;
     }
+
     /**
      * Translates between the ArrayList of strings to an array of strings
      * needed by the JcCommander interface.
@@ -51,10 +52,9 @@ public class ArgumentMapper {
         // To store  the args as an ArrayList first
         array = new ArrayList<String>();
         array.add("-i");
-        array.add("C:\\Users\\anaro\\OneDrive\\Desktop\\ResearchInternship\\astracker\\test-data\\output\\arcanOutput\\antlr");
-        //input would be a git repo
+        array.add("./test-data/output/arcanOutput/antlr");
         array.add("-o");
-        array.add("C:\\Users\\anaro\\OneDrive\\Desktop\\ResearchInternship\\astracker\\output-folder");
+        array.add("./output-folder");
 
         for (String key : requestParameters.keySet()) {
             switch (key) {
@@ -132,7 +132,7 @@ public class ArgumentMapper {
                     array.add(requestParameters.get("gitRepo"));
                     break;
 
-                case "runTracker": //can be either true or false - added only when false
+                case "runTracker":
                     if (requestParameters.get("runTracker").equals("false")) {
                         array.add("-doNotRunTracker");
                     }
@@ -142,6 +142,11 @@ public class ArgumentMapper {
         return array;
     }
 
+    /**
+     * Will extract the name of the project from a GitHub repository link using a regex rule.
+     * @param git_link
+     * @return String|null
+     */
     private String extractProjectName(String git_link) {
         System.out.println("Project link: " + git_link);
         Pattern pattern = Pattern.compile(
@@ -156,6 +161,10 @@ public class ArgumentMapper {
         return null;
     }
 
+    /**
+     * Can be used to return a Json representation of all the arguments used in the analysis.
+     * @return String
+     */
     @Override
     public String toString() {
         ObjectMapper mapper = new ObjectMapper();

@@ -23,7 +23,7 @@ public class RemoteProjectFetcher {
         try {
             if (this.isValidGitLink(args.getGitLink())) {
                 var directory = String.format("./cloned-projects/%s", args.project.name);
-                var file = new File(directory); //Todo this might bug
+                var file = new File(directory);
 
                 if (this.checkIfAlreadyCloned(file)) {
                     // the project was already cloned - no need to clone it again
@@ -63,7 +63,8 @@ public class RemoteProjectFetcher {
      * @return boolean
      */
     public boolean checkIfAlreadyCloned(File file) {
-        if (file.exists() && file.isDirectory()) { //TODO: maybe add more checks here
+        //TODO Check this
+        if (file.exists() && file.isDirectory() && file.list() == null) {
             System.out.println("The project was already cloned - no need to do it again");
             return true;
         }
