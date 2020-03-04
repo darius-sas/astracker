@@ -41,7 +41,6 @@ public class Analysis {
             if (args.runArcan()) {
                 var arcan = GitArcanRunner.newGitRunner(project, args);
                 runners.add(arcan);
-                System.out.println("Arcan runner was added");
             }else if (isGraphMLProject()){
                     project.addGraphMLfiles(args.getHomeProjectDirectory());
             }else if (args.project.isJar) {
@@ -64,7 +63,6 @@ public class Analysis {
             }
 
             if (args.runTracker()){
-                System.out.println("ASTracker added!");
                 runners.add(new TrackASRunner(project, args.trackNonConsecutiveVersions));
 
                 if (args.similarityScores) {

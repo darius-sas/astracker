@@ -79,7 +79,6 @@ public class RemoteProjectFetcher {
      * @throws IOException
      */
     private boolean isValidGitLink(String link) throws IOException {
-        //TODO: could add another check to see if the project name is the same as the git one :+1:
         return link.matches(".*\\.git");
     }
 }
