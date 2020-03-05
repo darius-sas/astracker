@@ -85,6 +85,11 @@ public class Analysis {
                 runners.add(new ProjecSizeRunner(project));
                 PersistenceHub.register(new ProjectSizeGenerator(args.getProjectSizesFile()));
             }
+
+            if (args.runFanInFanOutCounter()){
+                runners.add(new FanInFanOutCounterRunner(project));
+                PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
+            }
         }
     }
 

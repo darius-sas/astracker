@@ -27,6 +27,9 @@ public class Args {
     @Parameter(names = {"-runProjectSize", "-rS"}, description = "Whether to run the project size runner.")
     private boolean runProjectSizes = false;
 
+    @Parameter(names = {"-runFanInFanOut", "-rF"}, description = "Whether to run the fan in and fan out counter.")
+    private boolean runFanInFanOutCounter = false;
+
     @Parameter(names = {"-showArcanOutput", "-sAO"}, description = "Whether or not to show Arcan's output to the console.")
     public boolean showArcanOutput = false;
 
@@ -48,6 +51,8 @@ public class Args {
     public boolean runTracker(){ return !disableTrackerRunner; }
 
     public boolean runProjectSizes(){ return runProjectSizes; }
+
+    public boolean runFanInFanOutCounter(){ return runFanInFanOutCounter; }
 
     public String getArcanJarFile(){
         return new File(runArcan).getAbsolutePath();
@@ -78,6 +83,8 @@ public class Args {
     }
 
     public String getProjectSizesFile(){return getOutputFileName("project-sizes", "csv");}
+
+    public String getFanInFanOutFile(){return getOutputFileName("fanin-fanout", "csv");}
 
     public String getComponentCharacteristicsFile(){
         return getOutputFileName("component-characteristics", "csv");

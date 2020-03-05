@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.data.project.IProject;
 import org.rug.data.smells.ArchitecturalSmell;
-import org.rug.persistence.ComponentAffectedByGenerator;
-import org.rug.persistence.PersistenceHub;
-import org.rug.persistence.SmellCharacteristicsGenerator;
+import org.rug.persistence.*;
 import org.rug.tracker.ASmellTracker;
 import org.rug.tracker.ISimilarityLinker;
 import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
@@ -69,20 +67,22 @@ public class ASmellTrackerTest {
         ISimilarityLinker scorer = new SimpleNameJaccardSimilarityLinker();
         ASmellTracker tracker = new ASmellTracker(scorer, false);
         PersistenceHub.clearAll();
+        PersistenceHub.register(new CondensedGraphGenerator(Paths.get(trackASOutputDir, project.getName(), "condensed-graph-consecOnly.graphml").toString()));
         //PersistenceHub.register(new SmellSimilarityDataGenerator(Paths.get(trackASOutputDir, project.getName(), "jaccard-scores-consecutives-only.csv").toString()));
         //PersistenceHub.register(new SmellCharacteristicsGenerator(Paths.get(trackASOutputDir, project.getName(), "smells-characteristics.csv").toString(), project));
         var gen = new ComponentAffectedByGenerator(Paths.get(trackASOutputDir, project.getName(), "affectedComponents.csv").toString());
 
         for (var version : project){
             List<ArchitecturalSmell> smells = project.getArchitecturalSmellsIn(version);
-            //smells.forEach(ArchitecturalSmell::calculateCharacteristics);
+            smells.forEach(ArchitecturalSmell::calculateCharacteristics);
             tracker.track(smells, version);
             System.out.println(version);
             assertEquals((long)oracle.get(version.getVersionString()), tracker.smellsLinked());
-            //PersistenceHub.sendToAndWrite(SmellSimilarityDataGenerator.class, tracker);
+            PersistenceHub.sendToAndWrite(SmellSimilarityDataGenerator.class, tracker);
         }
         gen.accept(tracker);
         PersistenceHub.sendToAndWrite(SmellCharacteristicsGenerator.class, tracker);
+        PersistenceHub.sendToAndWrite(CondensedGraphGenerator.class, tracker);
         PersistenceHub.closeAll();
     }
 
