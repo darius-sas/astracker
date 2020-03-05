@@ -8,7 +8,9 @@
 /arcan
 /arcan-c-cpp
 /qualitas-corpus
-
+output-folder*
+cloned-projects
+arcan-output
 **/.Rhistory
 
 # Created by https://www.gitignore.io/api/java,intellij
