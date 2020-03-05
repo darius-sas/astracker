@@ -11,6 +11,7 @@
 output-folder*
 cloned-projects
 arcan-output
+arcan/Arcan-1.4.0-SNAPSHOT
 **/.Rhistory
 
 # Created by https://www.gitignore.io/api/java,intellij

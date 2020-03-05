@@ -1,20 +1,27 @@
-package org.rug.api;
+package org.rug.web;
 
 import com.beust.jcommander.JCommander;
 import org.rug.Analysis;
-import org.rug.api.helpers.ArgumentMapper;
-import org.rug.api.helpers.RemoteProjectFetcher;
+import org.rug.web.helpers.ArgumentMapper;
+import org.rug.web.helpers.RemoteProjectFetcher;
 import org.rug.args.Args;
 import org.rug.persistence.PersistenceHub;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
-public class ASTrackerRunner {
+public class ASTrackerWebRunner {
 
     private ArgumentMapper mapper;
+    private static final Path arcanJavaJar = Paths.get("arcan/Arcan-1.4.0-SNAPSHOT/Arcan-1.4.0-SNAPSHOT.jar");
+    private static final Path arcanCppJar  = Paths.get("arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar");
+    private static final Path outputDirectory = Paths.get("./output-folder");
+    private static final Path clonedReposDirectory = Paths.get("./cloned-projects");
 
-    public ASTrackerRunner(ArgumentMapper mapper) {
-        this.mapper = mapper;
+    public ASTrackerWebRunner(Map<String, String> requestParameter) {
+        this.mapper = new ArgumentMapper(arcanJavaJar, arcanCppJar, outputDirectory, clonedReposDirectory, requestParameter);
     }
 
     /**
@@ -42,17 +49,6 @@ public class ASTrackerRunner {
             return this.getHelp();
         }
 
-        //Step1: clone the repository locally if not yet exists
-        if (args.isRemoteGitProject()) {
-            var fetcher = new RemoteProjectFetcher();
-            args = fetcher.fetchProject(args);
-
-            if (args.getGitLink() == null) {
-                return "Something went wrong when cloning the project: " + args.getGitLink();
-            }
-        }
-
-        //Step2: perform the analysis
         Analysis analysis = new Analysis(args);
 
         boolean errorsOccurred = false;

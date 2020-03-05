@@ -1,12 +1,12 @@
-package org.rug.api.helpers;
+package org.rug.web.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Helper class that can be used to map the request parameters to CLI arguments.
@@ -16,8 +16,21 @@ public class ArgumentMapper {
 
     private Map<String, String> requestParameters;
     private ArrayList<String> array;
+    private RemoteProjectFetcher fetcher;
 
-    public ArgumentMapper(Map<String,String> requestParameters) {
+    private Path arcanJavaJarPath;
+    private Path arcanCJarPath;
+    private Path outputFolderPath;
+
+    public ArgumentMapper(Path arcanJavaJarPath,
+                          Path arcanCJarPath,
+                          Path outputFolderPath,
+                          Path clonedRepoDirectory,
+                          Map<String,String> requestParameters) {
+        this.arcanJavaJarPath = arcanJavaJarPath;
+        this.arcanCJarPath = arcanCJarPath;
+        this.outputFolderPath = outputFolderPath;
+        this.fetcher = new RemoteProjectFetcher(clonedRepoDirectory);
         this.requestParameters = requestParameters;
     }
 
@@ -50,11 +63,10 @@ public class ArgumentMapper {
      */
     private ArrayList<String> mapParameters() {
         // To store  the args as an ArrayList first
-        array = new ArrayList<String>();
-        array.add("-i");
-        array.add("./test-data/output/arcanOutput/antlr");
+        array = new ArrayList<>();
+
         array.add("-o");
-        array.add("./output-folder");
+        array.add(outputFolderPath.toString());
 
         for (String key : requestParameters.keySet()) {
             switch (key) {
@@ -111,25 +123,19 @@ public class ArgumentMapper {
 
                 // Link to GitHub
                 case "project":
-                    var git_link = requestParameters.get("project");
-                    var name = this.extractProjectName(git_link);
-                    if (name == null) {
-                        System.out.println("The name could not be extracted");
-                        break;
-                    }
-
-                    array.add("-gitLink");
-                    array.add(git_link);
+                    var linkOrName = requestParameters.get("project");
+                    var name = fetcher.getProjectName(linkOrName);
+                    var inputDir = Paths.get(outputFolderPath.toString(), "arcanOutput", name);
+                    inputDir.toFile().mkdir();
+                    array.add("-i");
+                    array.add(inputDir.toString());
                     array.add("-projectName");
                     array.add(name);
                     array.add("-runArcan");
-                    array.add("./Arcan-1.4.0-SNAPSHOT/Arcan-1.4.0-SNAPSHOT.jar");
-                    break;
-
-                // Link to local repository
-                case "gitRepo":
+                    array.add(requestParameters.get("language").equalsIgnoreCase("java") ? arcanJavaJarPath.toString() : arcanCJarPath.toString());
+                    var projectInputDir = fetcher.getProjectPath(linkOrName);
                     array.add("-gitRepo");
-                    array.add(requestParameters.get("gitRepo"));
+                    array.add(projectInputDir.toString());
                     break;
 
                 case "runTracker":
@@ -142,24 +148,6 @@ public class ArgumentMapper {
         return array;
     }
 
-    /**
-     * Will extract the name of the project from a GitHub repository link using a regex rule.
-     * @param git_link
-     * @return String|null
-     */
-    private String extractProjectName(String git_link) {
-        System.out.println("Project link: " + git_link);
-        Pattern pattern = Pattern.compile(
-                "https:\\/\\/github\\.com\\/.*\\/(.*)\\.git"
-        );
-        Matcher matcher = pattern.matcher(git_link);
-        if(matcher.find()) {
-            var name = matcher.group(1);
-            System.out.println("Project name: " + name);
-            return name;
-        }
-        return null;
-    }
 
     /**
      * Can be used to return a Json representation of all the arguments used in the analysis.

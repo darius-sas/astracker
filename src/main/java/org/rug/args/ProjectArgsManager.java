@@ -23,6 +23,4 @@ public class ProjectArgsManager {
     @Parameter(names = {"-jarProject", "-jar"}, description = "Flag to denote a project of JAR files (either directories of Jar files or Jar files only).")
     public boolean isJar = false;
 
-    @Parameter(names = {"-gitLink"}, description = "The link to the GitHub repository - should end in .git")
-    public String gitLink;
 }

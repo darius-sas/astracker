@@ -13,6 +13,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="Arcan" target="1.8" />
       <module name="astracker" target="11" />
     </bytecodeTargetLevel>
   </component>

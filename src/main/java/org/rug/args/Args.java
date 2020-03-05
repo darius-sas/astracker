@@ -127,12 +127,4 @@ public class Args {
         return project.gitRepo != null;
     }
 
-    public String getGitLink() {
-        return project.gitLink;
-    }
-
-    public boolean isRemoteGitProject(){
-        return project.gitLink != null;
-    }
-
 }
