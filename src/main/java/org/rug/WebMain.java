@@ -12,5 +12,4 @@ public class WebMain {
     public static void main(String[] args) {
         SpringApplication.run(WebMain.class, args);
     }
-
 }

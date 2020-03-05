@@ -13,10 +13,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Arcan" target="1.8" />
       <module name="astracker" target="11" />
-      <module name="ASTracker" target="1.8" />
-      <module name="trackas" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

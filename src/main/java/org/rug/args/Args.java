@@ -108,12 +108,24 @@ public class Args {
         return p.toAbsolutePath().toString();
     }
 
+    public void setGitRepo(File localRepo) {
+        project.gitRepo = localRepo;
+    }
+
     public File getGitRepo() {
         return project.gitRepo;
     }
 
     public boolean isGitProject(){
         return project.gitRepo != null;
+    }
+
+    public String getGitLink() {
+        return project.gitLink;
+    }
+
+    public boolean isRemoteGitProject(){
+        return project.gitLink != null;
     }
 
 }
