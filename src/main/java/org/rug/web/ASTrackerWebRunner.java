@@ -31,7 +31,7 @@ public class ASTrackerWebRunner {
      *
      * @return String
      */
-    public String run() throws IOException {
+    public String run() throws Exception {
         var mapping = this.mapper.getArgumentsMapping();
         if (mapping.length == 1) {
             return null;
@@ -63,7 +63,7 @@ public class ASTrackerWebRunner {
             }
         }
         if (errorsOccurred) {
-            return "Unexpected errors have occurred while running runner " + errorRunnerName;
+            throw new Exception("Unexpected errors have occurred while running runner " + errorRunnerName);
         }
 
         PersistenceHub.closeAll();

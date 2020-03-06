@@ -32,6 +32,7 @@ public class ArgumentMapper {
         this.outputFolderPath = outputFolderPath;
         this.fetcher = new RemoteProjectFetcher(clonedRepoDirectory);
         this.requestParameters = requestParameters;
+        array = new ArrayList<>();
     }
 
     /**
@@ -42,18 +43,11 @@ public class ArgumentMapper {
      */
     public String[] getArgumentsMapping() {
         if (!this.requestParameters.containsKey("project") ||
-            !this.requestParameters.containsKey("language")
-        ) {
-            return new String[]{"project and language are required fields."};
+            !this.requestParameters.containsKey("language")) {
+            throw new IllegalArgumentException("project and language are required fields.");
         }
 
-        var array = this.mapParameters();
-        var args = new String[array.size()];
-        for (int i=0; i < args.length; i++){
-            args[i] = array.get(i);
-        }
-
-        return args;
+        return mapParameters().toArray(String[]::new);
     }
 
     /**
@@ -63,7 +57,7 @@ public class ArgumentMapper {
      */
     private ArrayList<String> mapParameters() {
         // To store  the args as an ArrayList first
-        array = new ArrayList<>();
+        array.clear();
 
         array.add("-o");
         array.add(outputFolderPath.toString());
