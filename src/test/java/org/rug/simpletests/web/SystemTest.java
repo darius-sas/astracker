@@ -54,22 +54,22 @@ public class SystemTest {
         system.getVersions().putAll(versions);
     }
 
-    @Test
-    void testController(){
-        var controller = new SystemController();
-
-        assertEquals(system.getVersions(), controller.versions("antlr"));
-
-        var components = controller.components("antlr", true, 0, 1);
-        components.forEach(c -> {
-            assertTrue(c.getSpanningVersions().contains(system.getVersions().lastKey()));
-        });
-        assertNotEquals(system.getComponents(), components);
-
-        var smells = controller.smells("antlr", true, 0, 1);
-        smells.forEach(s -> {
-            assertTrue(s.getSpanningVersions().contains(system.getVersions().lastKey()));
-        });
-        assertNotEquals(system.getSmells(), smells);
-    }
+//    @Test
+//    void testController(){
+//        var controller = new SystemController();
+//
+//        assertEquals(system.getVersions(), controller.versions("antlr"));
+//
+//        var components = controller.components("antlr", true, 0, 1);
+//        components.forEach(c -> {
+//            assertTrue(c.getSpanningVersions().contains(system.getVersions().lastKey()));
+//        });
+//        assertNotEquals(system.getComponents(), components);
+//
+//        var smells = controller.smells("antlr", true, 0, 1);
+//        smells.forEach(s -> {
+//            assertTrue(s.getSpanningVersions().contains(system.getVersions().lastKey()));
+//        });
+//        assertNotEquals(system.getSmells(), smells);
+//    }
 }

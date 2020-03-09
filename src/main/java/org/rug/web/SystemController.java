@@ -1,5 +1,7 @@
 package org.rug.web;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.fasterxml.jackson.databind.util.JSONWrappedObject;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.slf4j.Logger;
@@ -11,10 +13,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -28,6 +33,24 @@ public class SystemController {
 
     private static final int MAX_CACHED_SYSTEMS = 5;
     private final Map<String, System> cachedSystems = new LinkedHashMap<>();
+
+    @RequestMapping(value = "/projects", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public JSONWrappedObject projects(){
+        Path projectsDir = Paths.get("./output-folder/trackASOutput/");
+        try {
+
+            var list = Files.list(projectsDir)
+                    .filter(Objects::nonNull)
+                    .map(Path::toFile)
+                    .filter(File::isDirectory)
+                    .map(File::getName).collect(Collectors.toList());
+
+            return wrapToJson("projects", list);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return wrapToJson("projects", List.of());
+    }
 
     /**
      * Return a map of versions for this system. The keys represent the index of the version and the values
@@ -51,7 +74,7 @@ public class SystemController {
      * @return a list of components.
      */
     @RequestMapping(value = "/components", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Component> components(@RequestParam(value="system", defaultValue="antlr") String system,
+    public JSONWrappedObject components(@RequestParam(value="system", defaultValue="antlr") String system,
                                       @RequestParam(value="lastVersion", defaultValue = "true") boolean lastVersion,
                                       @RequestParam(value="start", defaultValue = "-1", required = false) long fromVersionIndex,
                                       @RequestParam(value="end", defaultValue = "4294967296", required = false) long toVersionIndex){
@@ -63,7 +86,7 @@ public class SystemController {
             fromVersionIndex = sys.getRecentStartingIndex();
         }
         logger.debug("Using fromVersionIndex={}", fromVersionIndex);
-        return sys.getComponents(fromVersionIndex, toVersionIndex);
+        return wrapToJson("components", sys.getComponents(fromVersionIndex, toVersionIndex));
     }
 
     /**
@@ -77,7 +100,7 @@ public class SystemController {
      * @return a list of smells.
      */
     @RequestMapping(value = "/smells", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Smell> smells(@RequestParam(value="system", defaultValue="antlr") String system,
+    public JSONWrappedObject smells(@RequestParam(value="system", defaultValue="antlr") String system,
                               @RequestParam(value="lastVersion", defaultValue = "true") boolean lastVersion,
                               @RequestParam(value="start", defaultValue = "-1", required = false) long fromVersionIndex,
                               @RequestParam(value="end", defaultValue = "4294967296", required = false) long toVersionIndex){
@@ -89,7 +112,7 @@ public class SystemController {
             fromVersionIndex = sys.getRecentStartingIndex();
         }
         logger.debug("Using fromVersionIndex={}", fromVersionIndex);
-        return sys.getSmells(fromVersionIndex, toVersionIndex);
+        return wrapToJson("smells", sys.getSmells(fromVersionIndex, toVersionIndex));
     }
 
     /**
@@ -98,8 +121,8 @@ public class SystemController {
      * @return a System object containing all versions of all smells and components.
      */
     @RequestMapping(value = "/system", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public System system(@RequestParam(value="system", defaultValue="antlr") String system){
-        return getSystem(system);
+    public JSONWrappedObject system(@RequestParam(value="system", defaultValue="antlr") String system){
+        return wrapToJson("system", getSystem(system));
     }
 
     /**
@@ -113,7 +136,7 @@ public class SystemController {
      * @return a list of smells.
      */
     @RequestMapping(value = "/system_smells", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public TreeMap<String, List<Smell>> getSystemSmells(@RequestParam(value="system", defaultValue="antlr") String system,
+    public JSONWrappedObject getSystemSmells(@RequestParam(value="system", defaultValue="antlr") String system,
                                                         @RequestParam(value="lastVersion", defaultValue = "true") boolean lastVersion,
                                                         @RequestParam(value="start", defaultValue = "-1", required = false) long fromVersionIndex,
                                                         @RequestParam(value="end", defaultValue = "4294967296", required = false) long toVersionIndex){
@@ -125,7 +148,7 @@ public class SystemController {
             fromVersionIndex = sys.getRecentStartingIndex();
         }
         logger.debug("Using fromVersionIndex={}", fromVersionIndex);
-        return sys.getSystemSmells();
+        return wrapToJson("system-smells", sys.getSystemSmells());
     }
 
     /**
@@ -145,5 +168,10 @@ public class SystemController {
             logger.debug("Successfully loaded {}", systemName);
         }
         return cachedSystems.get(systemName);
+    }
+
+
+    private JSONWrappedObject wrapToJson(String name, Object o){
+        return new JSONWrappedObject(String.format("{\"%s\":", name), "}", o);
     }
 }
