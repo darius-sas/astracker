@@ -11,11 +11,23 @@ import java.util.*;
  */
 public class Smell extends VersionSpanningNode{
 
+    private final static Map<String, String> typesLabels;
+
+    static {
+        typesLabels = new HashMap<>();
+        typesLabels.put("cyclicDep", "Cyclic Dependency");
+        typesLabels.put("unstableDep", "Unstable Dependency");
+        typesLabels.put("hubLikeDep", "Hublike Dependency");
+        typesLabels.put("godComponent", "God Component");
+    }
+
     private final long id;
     private final String type;
     private final long age;
     private final String firstVersionAppeared;
+    private final long firstIndexAppeared;
     private final String lastVersionDetected;
+    private final long lastIndexDetected;
     private final Map<Long, List<String>> affectedComponents;
 
     /**
@@ -24,10 +36,12 @@ public class Smell extends VersionSpanningNode{
      */
     public Smell(Vertex smell) {
         this.id = smell.value(ASmellTracker.UNIQUE_SMELL_ID);
-        this.type = smell.value(ASmellTracker.SMELL_TYPE);
+        this.type = toLabel(smell.value(ASmellTracker.SMELL_TYPE));
         this.age = smell.value(ASmellTracker.AGE);
-        this.firstVersionAppeared = smell.value(ASmellTracker.FIRST_APPEARED);
-        this.lastVersionDetected = smell.value(ASmellTracker.LAST_DETECTED);
+        this.firstVersionAppeared = shortenVersion(smell.value(ASmellTracker.FIRST_APPEARED));
+        this.firstIndexAppeared = smell.value(ASmellTracker.FIRST_APPEARED_INDEX);
+        this.lastVersionDetected = shortenVersion(smell.value(ASmellTracker.LAST_DETECTED));
+        this.lastIndexDetected = smell.value(ASmellTracker.LAST_DETECTED_INDEX);
         this.affectedComponents = new TreeMap<>();
         setAffectedComponents(smell);
         setCharacteristics(smell);
@@ -74,12 +88,34 @@ public class Smell extends VersionSpanningNode{
     }
 
     /**
+     * The version index where this smell first appeared;
+     */
+    public long getFirstIndexAppeared() {
+        return firstIndexAppeared;
+    }
+
+    /**
+     * The version index where this smell was last detected;
+     */
+    public long getLastIndexDetected() {
+        return lastIndexDetected;
+    }
+
+    /**
      * A map where the keys are the version indexes this smell has affected and the values
      * are a list of components name affected in that version.
      * @return a map as described above.
      */
     public Map<Long, List<String>> getAffectedComponents() {
         return affectedComponents;
+    }
+
+    private String toLabel(String smellType){
+        return typesLabels.getOrDefault(smellType, smellType);
+    }
+
+    private String shortenVersion(String version){
+        return version.substring(version.lastIndexOf("-")).substring(1, 8);
     }
 
     private void setCharacteristics(Vertex smell){

@@ -2,10 +2,7 @@ package org.rug.web;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Represents a node that is present in one or multiple versions of the system.
@@ -51,6 +48,13 @@ public abstract class VersionSpanningNode {
      * @return a map of maps.
      */
     public Map<Long, Map<String, String>> getCharacteristics() {
+        characteristics.values().forEach(map ->
+            characteristicsLabels.forEach((k, v) -> {
+                var oldValue = map.remove(k);
+                if (!filteredCharacteristics.contains(k)) {
+                    map.put(v, oldValue);
+                }
+            }));
         return characteristics;
     }
 
@@ -63,5 +67,35 @@ public abstract class VersionSpanningNode {
         var map = new HashMap<String, String>();
         vertex.keys().forEach(k -> map.put(k, vertex.value(k).toString()));
         return map;
+    }
+
+
+    private final static Map<String, String> characteristicsLabels;
+    private final static List<String> filteredCharacteristics;
+
+    static {
+        characteristicsLabels = new HashMap<>();
+        characteristicsLabels.put("pageRankAvrg", "Average PageRank");
+        characteristicsLabels.put("shape", "Shape");
+        characteristicsLabels.put("avrgEdgeWeight", "Average Edge Weight");
+        characteristicsLabels.put("overlapRatio", "Overlap ratio");
+        characteristicsLabels.put("numOfPrivateUseEdges", "Number of Private Edges");
+        characteristicsLabels.put("pageRankMax", "Max. PageRank");
+        characteristicsLabels.put("numOfInheritanceEdges", "Number of Inheritance Edges");
+        characteristicsLabels.put("numOfEdges", "Number of Edges");
+        characteristicsLabels.put("affectedDesignLevel", "Affected Level");
+        characteristicsLabels.put("size", "Number of components");
+        characteristicsLabels.put("affectedComponentType", "Affected Component Type");
+        characteristicsLabels.put("avrgNumOfChanges", "Average # of Changes");
+        characteristicsLabels.put("numOfPublicUseEdges", "Number of public edges");
+        characteristicsLabels.put("parentCentrality", "Parent Centrality");
+
+        filteredCharacteristics = new ArrayList<>();
+        filteredCharacteristics.add("numOfPrivateUseEdges");
+        filteredCharacteristics.add("numOfPublicUseEdges");
+    }
+
+    private String toLabel(String name){
+        return characteristicsLabels.getOrDefault(name, name);
     }
 }

@@ -1,6 +1,7 @@
 package org.rug.web;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.rug.tracker.ASmellTracker;
 
 import java.lang.reflect.Array;
@@ -17,6 +18,14 @@ public class System {
     private final List<Component>   components = new ArrayList<>(100);
 
     private final Graph graph;
+
+    /**
+     * Returns an empty system.
+     * @return an new system object with no smells, components and versions.
+     */
+    public static System empty(){
+        return new System(TinkerGraph.open());
+    }
 
     /**
      * Build the system starting from the given condensed graph.
