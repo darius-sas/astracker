@@ -88,11 +88,17 @@ public abstract class VersionSpanningNode {
         characteristicsLabels.put("affectedComponentType", "Affected Component Type");
         characteristicsLabels.put("avrgNumOfChanges", "Average # of Changes");
         characteristicsLabels.put("numOfPublicUseEdges", "Number of public edges");
-        characteristicsLabels.put("parentCentrality", "Parent Centrality");
+        characteristicsLabels.put("avrgInternalPathLength", "Average Internal Path Length");
+        characteristicsLabels.put("strength", "Strength");
+        characteristicsLabels.put("instabilityGap", "Instability Gap");
 
         filteredCharacteristics = new ArrayList<>();
         filteredCharacteristics.add("numOfPrivateUseEdges");
         filteredCharacteristics.add("numOfPublicUseEdges");
+        filteredCharacteristics.add("overlapRatiocyclicDep");
+        filteredCharacteristics.add("overlapRatiounstableDep");
+        filteredCharacteristics.add("overlapRatiohublikeDep");
+
     }
 
     private String toLabel(String name){

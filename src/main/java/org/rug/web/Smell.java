@@ -115,7 +115,12 @@ public class Smell extends VersionSpanningNode{
     }
 
     private String shortenVersion(String version){
-        return version.substring(version.lastIndexOf("-")).substring(1, 8);
+        var lastDash = version.lastIndexOf("-");
+        var undashed = version;
+        if (lastDash >= 0 && lastDash + 1 < version.length()){
+            undashed = version.substring(lastDash + 1);
+        }
+        return undashed.length() < 8 ? undashed : undashed.substring(0, 8);
     }
 
     private void setCharacteristics(Vertex smell){
