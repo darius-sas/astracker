@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -32,6 +35,7 @@ public class WebAnalysisController {
     public String analyse(
             @RequestParam Map<String,String> requestParameters,
             HttpServletResponse response) {
+
         var runner = new ASTrackerWebRunner(requestParameters);
         String result = null;
         try {
