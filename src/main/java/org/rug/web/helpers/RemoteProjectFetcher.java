@@ -56,7 +56,7 @@ public class RemoteProjectFetcher {
     public String getProjectName(String linkOrName){
         var slashIndex = linkOrName.lastIndexOf("/");
         var dotIndex = linkOrName.lastIndexOf(".");
-        return slashIndex == -1 || dotIndex == -1 ? linkOrName : linkOrName.substring(slashIndex, dotIndex);
+        return slashIndex == -1 || dotIndex == -1 ? linkOrName : linkOrName.substring(slashIndex+1, dotIndex);
     }
 
     public boolean isValidGitLink(String link) {

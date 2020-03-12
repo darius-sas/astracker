@@ -99,6 +99,7 @@ public class ArgumentMapper {
                     switch (requestParameters.get("language")) {
                         case "Java":
                         case "java":
+                            System.out.println("Language is Java");
                             array.add("-javaProject");
                             break;
                         case "jar":
@@ -106,6 +107,8 @@ public class ArgumentMapper {
                             array.add("-jarProject");
                             break;
                         case "c":
+                            System.out.println("Language is C");
+                            //TODO: there are special configs for each type of project, make them specific
                             array.add("-cProject");
                             break;
                         case "cpp":
@@ -119,6 +122,7 @@ public class ArgumentMapper {
                 case "project":
                     var linkOrName = requestParameters.get("project");
                     var name = fetcher.getProjectName(linkOrName);
+                    System.out.println("Project name is: " + linkOrName);
                     var inputDir = Paths.get(outputFolderPath.toString(), "arcanOutput", name);
                     inputDir.toFile().mkdir();
                     array.add("-i");
@@ -126,7 +130,10 @@ public class ArgumentMapper {
                     array.add("-projectName");
                     array.add(name);
                     array.add("-runArcan");
-                    array.add(requestParameters.get("language").equalsIgnoreCase("java") ? arcanJavaJarPath.toString() : arcanCJarPath.toString());
+                    array.add(requestParameters.get("language")
+                            .equalsIgnoreCase("java")
+                            ? arcanJavaJarPath.toString()
+                            : arcanCJarPath.toString());
                     var projectInputDir = fetcher.getProjectPath(linkOrName);
                     array.add("-gitRepo");
                     array.add(projectInputDir.toString());

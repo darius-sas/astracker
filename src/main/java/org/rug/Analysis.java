@@ -39,11 +39,19 @@ public class Analysis {
             project = getProject();
 
             if (args.runArcan()) {
-                var arcan = GitArcanRunner.newGitRunner(project, args);
+                ToolRunner arcan;
+                if(args.isJavaProject()) {
+                    System.out.println("This is a Java project! Adding Arcan Java Runner");
+                    arcan = GitArcanRunner.newGitRunner(project, args);
+                } else {
+                    System.out.println("This is a C project! Adding Arcan C Runner");
+                    arcan = GitArcanCRunner.newGitRunner(project, args);
+                }
                 runners.add(arcan);
-            }else if (isGraphMLProject()){
+
+            } else if (isGraphMLProject()){
                     project.addGraphMLfiles(args.getHomeProjectDirectory());
-            }else if (args.project.isJar) {
+            } else if (args.project.isJar) {
                 project.addSourceDirectory(args.getHomeProjectDirectory());
                 var outputDir = args.getArcanOutDir();
                 project.forEach(version -> {

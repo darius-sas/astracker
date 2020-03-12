@@ -127,4 +127,7 @@ public class Args {
         return project.gitRepo != null;
     }
 
+    public boolean isJavaProject() {
+        return project.isJava;
+    }
 }

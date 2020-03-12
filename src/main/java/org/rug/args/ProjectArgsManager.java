@@ -18,7 +18,7 @@ public class ProjectArgsManager {
     public File gitRepo;
 
     @Parameter(names = {"-javaProject", "-jP"}, description = "Flag this as a Java project (i.e. project analysed with Arcan for Java).")
-    public boolean isJava = true;
+    public boolean isJava;
 
     @Parameter(names = {"-jarProject", "-jar"}, description = "Flag to denote a project of JAR files (either directories of Jar files or Jar files only).")
     public boolean isJar = false;
