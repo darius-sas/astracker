@@ -45,11 +45,12 @@ public class ASTrackerWebRunner {
      *
      * @return String
      */
-    public String run() throws Exception {
+    public void run() throws Exception {
         PersistenceHub.clearAll();
+
         var mapping = this.mapper.getArgumentsMapping();
         if (mapping.length == 1) {
-            return null;
+            throw new IllegalArgumentException("Request malformed due to illegal arguments provided.");
         }
 
         Args args = new Args();
@@ -60,15 +61,10 @@ public class ASTrackerWebRunner {
         jc.setProgramName("java -jar astracker.jar");
         jc.parse(mapping);
 
-        if (args.help) {
-            return this.getHelp();
-        }
-
         Analysis analysis = new Analysis(args);
 
         boolean errorsOccurred = false;
         String errorRunnerName = "";
-
         for (var r : analysis.getRunners()) {
             int exitCode = r.run();
             errorsOccurred = exitCode != 0;
@@ -82,11 +78,14 @@ public class ASTrackerWebRunner {
         }
 
         PersistenceHub.closeAll();
-        return "Completed successfully.";
     }
 
     public String getCLIArgs() {
         return this.mapper.toString();
+    }
+
+    public String getProjectName(){
+        return this.mapper.getProjectName();
     }
 
     /**

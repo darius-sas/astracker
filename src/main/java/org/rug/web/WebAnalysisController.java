@@ -32,21 +32,27 @@ public class WebAnalysisController {
      * @throws IOException
      */
     @RequestMapping(value = {"/analyse"}, method = RequestMethod.GET,  produces={ "application/json"})
-    public String analyse(
+    public ResultResponse analyse(
             @RequestParam Map<String,String> requestParameters,
             HttpServletResponse response) {
 
         var runner = new ASTrackerWebRunner(requestParameters);
-        String result = null;
+        ResultResponse result = new ResultResponse();
         try {
-            result = runner.run();
+            long start = java.lang.System.nanoTime();
+            runner.run();
+            long end = java.lang.System.nanoTime();
             response.setStatus(HttpServletResponse.SC_OK);
-            if (result == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
+            result.setResult(Result.SUCCESS);
+            result.setProject(runner.getProjectName());
+            result.setTimeElapsed(end - start);
+            result.setMessage("No message.");
         } catch (Exception e) {
             logger.error("Internal server error: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            result.setResult(Result.FAILED);
+            result.setMessage(e.getMessage());
+            result.setTimeElapsed(0);
         }
         return result;
     }
@@ -66,4 +72,64 @@ public class WebAnalysisController {
         var runner = new ASTrackerWebRunner(requestParameters);
         return runner.getCLIArgs();
     }
+
+    public final class ResultResponse{
+        String project;
+        Result result;
+        long timeElapsed;
+        String message;
+
+        public ResultResponse(){}
+
+        public ResultResponse(String project, Result result, String message, long timeElapsed) {
+            this.project = project;
+            this.result = result;
+            this.timeElapsed = timeElapsed;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public ResultResponse setProject(String project) {
+            this.project = project;
+            return this;
+        }
+
+        public ResultResponse setResult(Result result) {
+            this.result = result;
+            return this;
+        }
+
+        public ResultResponse setTimeElapsed(long timeElapsed) {
+            this.timeElapsed = timeElapsed;
+            return this;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public Result getResult() {
+            return result;
+        }
+
+        public String getTimeElapsed() {
+            double elapsedMinutes = (timeElapsed * 1e-9) / 60d;
+            long minutes = Math.round(Math.floor(elapsedMinutes));
+            long seconds = Math.abs(Math.round((elapsedMinutes - minutes) * 100 * 0.6d));
+            return String.format("%d minutes %s seconds", minutes, seconds);
+        }
+    }
+
+    public enum Result{
+        SUCCESS,
+        FAILED,
+        CANCELLED
+    }
+
 }
