@@ -29,6 +29,8 @@ public class ASTrackerWebRunner {
     public ASTrackerWebRunner(Map<String, String> requestParameter) {
         try {
             Files.createDirectory(outputDirectory);
+            Files.createDirectory(Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput"));
+            Files.createDirectory(Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput"));
             Files.createDirectory(clonedReposDirectory);
         } catch (IOException e) {
             logger.error("Could not create working directories: {}", e.getMessage());
@@ -44,6 +46,7 @@ public class ASTrackerWebRunner {
      * @return String
      */
     public String run() throws Exception {
+        PersistenceHub.clearAll();
         var mapping = this.mapper.getArgumentsMapping();
         if (mapping.length == 1) {
             return null;
