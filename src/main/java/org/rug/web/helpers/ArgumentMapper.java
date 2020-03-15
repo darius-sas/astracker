@@ -139,6 +139,11 @@ public class ArgumentMapper {
                     array.add(projectInputDir.toString());
                     break;
 
+                // Used to analyse only a single version with Arcan
+                case "singleVersion":
+                    array.add("-singleVersion");
+                    break;
+
                 case "runTracker":
                     if (requestParameters.get("runTracker").equals("false")) {
                         array.add("-doNotRunTracker");

@@ -27,7 +27,6 @@ public class Analysis {
     private IProject project;
     private final List<ToolRunner> runners;
 
-
     public Analysis(Args args) throws IOException {
         this.args = args;
         this.runners = new ArrayList<>();
@@ -35,17 +34,25 @@ public class Analysis {
     }
 
     private void init() throws IOException{
+        //TODO: why is this check here?
         if (project == null) {
             project = getProject();
 
             if (args.runArcan()) {
                 ToolRunner arcan;
+                //TODO refactor this
                 if(args.isJavaProject()) {
                     System.out.println("This is a Java project! Adding Arcan Java Runner");
                     arcan = GitArcanRunner.newGitRunner(project, args);
                 } else {
-                    System.out.println("This is a C project! Adding Arcan C Runner");
-                    arcan = GitArcanCRunner.newGitRunner(project, args);
+                    // C project, will use the Arcan C analyzer
+                    if (args.shouldAnalyseSingleVersion()) {
+                        System.out.println("This is a single version C project! Adding Arcan C Runner");
+                        arcan = GitArcanCRunner.newSingleVersionGitRunner(project, args);
+                    }  else {
+                        System.out.println("This is a Git C project! Adding Arcan C Runner");
+                        arcan = GitArcanCRunner.newGitRunner(project, args);
+                    }
                 }
                 runners.add(arcan);
 
