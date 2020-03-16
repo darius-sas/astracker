@@ -103,7 +103,7 @@ public class Analysis {
         ToolRunner arcan;
 
         if(args.isJavaProject()) {
-            arcan = GitArcanRunner.newGitRunner(project, args);
+            arcan = GitArcanJavaRunner.newGitRunner(project, args);
         } else {
             // C project, will use the Arcan C analyzer
              arcan = GitArcanCRunner.newGitRunner(project, args);
