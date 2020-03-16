@@ -34,28 +34,11 @@ public class Analysis {
     }
 
     private void init() throws IOException{
-        //TODO: why is this check here?
         if (project == null) {
             project = getProject();
 
             if (args.runArcan()) {
-                ToolRunner arcan;
-                //TODO refactor this
-                if(args.isJavaProject()) {
-                    System.out.println("This is a Java project! Adding Arcan Java Runner");
-                    arcan = GitArcanRunner.newGitRunner(project, args);
-                } else {
-                    // C project, will use the Arcan C analyzer
-                    if (args.shouldAnalyseSingleVersion()) {
-                        System.out.println("This is a single version C project! Adding Arcan C Runner");
-                        arcan = GitArcanCRunner.newSingleVersionGitRunner(project, args);
-                    }  else {
-                        System.out.println("This is a Git C project! Adding Arcan C Runner");
-                        arcan = GitArcanCRunner.newGitRunner(project, args);
-                    }
-                }
-                runners.add(arcan);
-
+                runners.add(getArcanRunner());
             } else if (isGraphMLProject()){
                     project.addGraphMLfiles(args.getHomeProjectDirectory());
             } else if (args.project.isJar) {
@@ -107,6 +90,25 @@ public class Analysis {
                 PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
             }
         }
+    }
+
+    /**
+     * Will decide which Arcan runner to add to the project depending on the arguments.
+     * GitRunner - for Java projects
+     * GitCRunner - for C projects
+     *
+     * @return ToolRunner
+     */
+    private ToolRunner getArcanRunner() {
+        ToolRunner arcan;
+
+        if(args.isJavaProject()) {
+            arcan = GitArcanRunner.newGitRunner(project, args);
+        } else {
+            // C project, will use the Arcan C analyzer
+             arcan = GitArcanCRunner.newGitRunner(project, args);
+            }
+        return arcan;
     }
 
     public IProject getProject() throws IOException {

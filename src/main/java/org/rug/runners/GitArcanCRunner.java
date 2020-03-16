@@ -32,28 +32,18 @@ public class GitArcanCRunner extends ToolRunner {
     }
 
     /**
-     * Default Arcan for C projects. Will analyse only the current version in a branch.
-     * CLI command :
-     * java -jar arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar -versionId version -p cloned-projects/pure/ -out new-folder
+     * Arcan runner for C projects. Can analyse all the versions in the current branch, or a single version.
      * @param project
      * @param args
      * @return
      */
-    public static GitArcanCRunner newSingleVersionGitRunner(IProject project, Args args){
-        //TODO: Refactor the two functions, only the args are different.
-        var path = Paths.get(args.getGitRepo().toString());
-        var versionId = String.format("%s-%s-%s",
-                "1",
-                getCommitDateFromPath(path),
-                getCommitFromPath(path).getName()
-        );
-
-        var arcanArgs = String.format("-versionId %s -p %s -out %s -branch %s",
-                versionId,
-                args.getGitRepo().getAbsolutePath(),
-                args.getArcanOutDir(),
-                "master"
-            );
+    public static GitArcanCRunner newGitRunner(IProject project, Args args){
+        String arcanArgs = null;
+        if (args.shouldAnalyseSingleVersion()) {
+            arcanArgs = getSingleVersionArcanArgs(args);
+        } else {
+            arcanArgs = getArcanArgs(args);
+        }
 
         var arcanCommand = "java -jar " + args.getArcanJarFile();
         GitArcanCRunner arcan = new GitArcanCRunner("arcanC", project, args, arcanCommand);
@@ -63,26 +53,41 @@ public class GitArcanCRunner extends ToolRunner {
     }
 
     /**
-     * Default Arcan for C projects. Will analyse all the versions in the current branch.
-     * @param project
+     * Returns the list of CLI arguments that are used when running Arcan on multiple versions of a Git project.
      * @param args
-     * @return
+     * @return String
      */
-    public static GitArcanCRunner newGitRunner(IProject project, Args args){
-        var arcanArgs = String.format("-git -p %s -out %s -branch %s -startDate %s -nWeeks %d",
+    private static String getArcanArgs(Args args) {
+        System.out.println("This is a Git C project! Adding Arcan C Runner");
+        return String.format("-git -p %s -out %s -branch %s -startDate %s -nWeeks %d",
                 args.getGitRepo().getAbsolutePath(),
                 args.getArcanOutDir(),
                 "master",
                 "1-1-1",
                 2);
-
-        var arcanCommand = "java -jar " + args.getArcanJarFile();
-        GitArcanCRunner arcan = new GitArcanCRunner("arcanC", project, args, arcanCommand);
-        arcan.setArgs(arcanArgs.split(" "));
-        arcan.inheritOutput(args.showArcanOutput);
-        return arcan;
     }
 
+    /**
+     * Returns the list of CLI arguments that are used when running Arcan on a single version of a Git project.
+     * @param args
+     * @return String
+     */
+    private static String getSingleVersionArcanArgs(Args args) {
+        System.out.println("This is a single version C project! Adding Arcan C Runner");
+        var path = Paths.get(args.getGitRepo().toString());
+        var versionId = String.format("%s-%s-%s",
+            "1",
+            getCommitDateFromPath(path),
+            getCommitHashFromPath(path).getName()
+        );
+
+        return String.format("-versionId %s -p %s -out %s -branch %s",
+            versionId,
+            args.getGitRepo().getAbsolutePath(),
+            args.getArcanOutDir(),
+            "master"
+        );
+    }
 
     /**
      * Used to return the date of the current commit, formatted according to ASTracker.
@@ -96,7 +101,7 @@ public class GitArcanCRunner extends ToolRunner {
 
         try {
             Git git = Git.init().setDirectory(new File(path.toString())).call();
-            var lastCommitId = getCommitFromPath(path);
+            var lastCommitId = getCommitHashFromPath(path);
             var revWalk = new RevWalk(git.getRepository());
             commit = revWalk.parseCommit(lastCommitId);
 
@@ -119,7 +124,7 @@ public class GitArcanCRunner extends ToolRunner {
      * @return String
      * @throws IOException
      */
-    private static AnyObjectId getCommitFromPath(Path path) {
+    private static AnyObjectId getCommitHashFromPath(Path path) {
         Git git = null;
         AnyObjectId lastCommitId = null;
         try {
