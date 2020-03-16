@@ -7,6 +7,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.rug.data.characteristics.comps.SourceCodeRetriever;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GitVersion extends AbstractVersion {
 
@@ -49,10 +51,14 @@ public class GitVersion extends AbstractVersion {
     public String parseVersionString(Path f) {
         var fileName = f.getFileName().toString();
         int endIndex = f.toFile().isDirectory() ? fileName.length() : fileName.lastIndexOf('.');
-        var splits = fileName.substring(0, endIndex).split("-");
-        setVersionIndex(Long.parseLong(splits[1]));
-        versionDate = String.join("-", splits[2].split("_"));
-        commitName = splits[3];
+        var splits = new ArrayList<>(Arrays.asList(fileName.substring(0, endIndex).split("-")));
+        if (splits.get(1) .equals("file")) {
+            // Arcan for singleVersion Java adds the word "file" to the outputted GraphML file
+            splits.remove(1);
+        }
+        setVersionIndex(Long.parseLong(splits.get(1)));
+        versionDate = String.join("-", splits.get(2).split("_"));
+        commitName = splits.get(3);
         return String.join("-", String.valueOf(versionIndex), commitName);
     }
 

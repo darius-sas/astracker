@@ -48,7 +48,7 @@ public class ArcanArgsHelper {
      * @return String
      */
     public static String getSingleVersionArguments(Args args) {
-        logger.debug("This is a single version C project! Adding Arcan C Runner to the list of runners");
+        logger.debug("This is a single version project!");
         var path = Paths.get(args.getGitRepo().toString());
         var versionId = String.format("%s-%s-%s",
                 "1",
@@ -56,7 +56,8 @@ public class ArcanArgsHelper {
                 getCommitHashFromPath(path).getName()
         );
 
-        return String.format("-versionId %s -p %s -out %s -branch %s",
+        return String.format("%s -versionId %s -p %s -out %s -branch %s",
+                args.isJavaProject() ? "-singleVersion" : "" , //flag needed for Java projects
                 versionId,
                 args.getGitRepo().getAbsolutePath(),
                 args.getArcanOutDir(),

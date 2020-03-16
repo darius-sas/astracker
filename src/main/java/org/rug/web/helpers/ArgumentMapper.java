@@ -99,7 +99,6 @@ public class ArgumentMapper {
                     switch (requestParameters.get("language")) {
                         case "Java":
                         case "java":
-                            System.out.println("Language is Java");
                             array.add("-javaProject");
                             break;
                         case "jar":
@@ -107,8 +106,6 @@ public class ArgumentMapper {
                             array.add("-jarProject");
                             break;
                         case "c":
-                            System.out.println("Language is C");
-                            //TODO: there are special configs for each type of project, make them specific
                             array.add("-cProject");
                             break;
                         case "cpp":
