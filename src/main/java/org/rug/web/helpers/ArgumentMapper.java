@@ -17,6 +17,7 @@ public class ArgumentMapper {
     private Map<String, String> requestParameters;
     private ArrayList<String> array;
     private RemoteProjectFetcher fetcher;
+    private String projectName;
 
     private Path arcanJavaJarPath;
     private Path arcanCJarPath;
@@ -118,14 +119,13 @@ public class ArgumentMapper {
                 // Link to GitHub
                 case "project":
                     var linkOrName = requestParameters.get("project");
-                    var name = fetcher.getProjectName(linkOrName);
-                    System.out.println("Project name is: " + linkOrName);
-                    var inputDir = Paths.get(outputFolderPath.toString(), "arcanOutput", name);
+                    projectName = fetcher.getProjectName(linkOrName);
+                    var inputDir = Paths.get(outputFolderPath.toString(), "arcanOutput", projectName);
                     inputDir.toFile().mkdir();
                     array.add("-i");
                     array.add(inputDir.toString());
                     array.add("-projectName");
-                    array.add(name);
+                    array.add(projectName);
                     array.add("-runArcan");
                     array.add(requestParameters.get("language")
                             .equalsIgnoreCase("java")
@@ -151,6 +151,9 @@ public class ArgumentMapper {
         return array;
     }
 
+    public String getProjectName(){
+        return projectName;
+    }
 
     /**
      * Can be used to return a Json representation of all the arguments used in the analysis.
