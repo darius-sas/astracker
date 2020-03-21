@@ -120,7 +120,6 @@ public class ArgumentMapper {
                 case "project":
                     var linkOrName = requestParameters.get("project");
                     projectName = fetcher.getProjectName(linkOrName);
-                    System.out.println("Project name is: " + linkOrName);
                     var inputDir = Paths.get(outputFolderPath.toString(), "arcanOutput", projectName);
                     inputDir.toFile().mkdir();
                     array.add("-i");
