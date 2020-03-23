@@ -164,7 +164,7 @@ public abstract class AbstractVersion implements IVersion {
      * @return a date in the format %dd-%mm-%yyyy. If no date was assigned to this version, an empty string is returned.
      */
     public String getVersionDate() {
-        return versionDate;
+        return versionDate == null ? "" : versionDate;
     }
 
     @Override

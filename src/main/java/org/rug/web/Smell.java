@@ -26,7 +26,9 @@ public class Smell extends VersionSpanningNode{
     private final long age;
     private final String firstVersionAppeared;
     private final long firstIndexAppeared;
+    private final String firstDateAppeared;
     private final String lastVersionDetected;
+    private final String lastDateDetected;
     private final long lastIndexDetected;
     private final Map<Long, List<String>> affectedComponents;
 
@@ -42,6 +44,8 @@ public class Smell extends VersionSpanningNode{
         this.firstIndexAppeared = smell.value(ASmellTracker.FIRST_APPEARED_INDEX);
         this.lastVersionDetected = shortenVersion(smell.value(ASmellTracker.LAST_DETECTED));
         this.lastIndexDetected = smell.value(ASmellTracker.LAST_DETECTED_INDEX);
+        this.lastDateDetected = smell.value(ASmellTracker.LAST_DETECTED_DATE);
+        this.firstDateAppeared = smell.value(ASmellTracker.FIRST_APPEARED_DATE);
         this.affectedComponents = new TreeMap<>();
         setAffectedComponents(smell);
         setCharacteristics(smell);
@@ -99,6 +103,22 @@ public class Smell extends VersionSpanningNode{
      */
     public long getLastIndexDetected() {
         return lastIndexDetected;
+    }
+
+    /**
+     * The date the smell first appeared.
+     * @return a string representing a date in the following format %dd-%mm-%yyyy
+     */
+    public String getFirstDateAppeared() {
+        return firstDateAppeared;
+    }
+
+    /**
+     * The date the smell first detected.
+     * @return a string representing a date in the following format %dd-%mm-%yyyy
+     */
+    public String getLastDateDetected() {
+        return lastDateDetected;
     }
 
     /**

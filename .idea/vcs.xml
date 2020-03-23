@@ -6,6 +6,7 @@
     <mapping directory="$PROJECT_DIR$/cloned-projects/IIS" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cloned-projects/SME" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cloned-projects/antlr" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cloned-projects/astracker" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cloned-projects/pyne" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/test-data/git-projects/pure" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/test-data/git-projects/pyne" vcs="Git" />
