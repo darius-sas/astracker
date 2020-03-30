@@ -27,7 +27,6 @@ public class Analysis {
     private IProject project;
     private final List<ToolRunner> runners;
 
-
     public Analysis(Args args) throws IOException {
         this.args = args;
         this.runners = new ArrayList<>();
@@ -39,11 +38,10 @@ public class Analysis {
             project = getProject();
 
             if (args.runArcan()) {
-                var arcan = GitArcanRunner.newGitRunner(project, args);
-                runners.add(arcan);
-            }else if (isGraphMLProject()){
+                runners.add(getArcanRunner());
+            } else if (isGraphMLProject()){
                     project.addGraphMLfiles(args.getHomeProjectDirectory());
-            }else if (args.project.isJar) {
+            } else if (args.project.isJar) {
                 project.addSourceDirectory(args.getHomeProjectDirectory());
                 var outputDir = args.getArcanOutDir();
                 project.forEach(version -> {
@@ -92,6 +90,25 @@ public class Analysis {
                 PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
             }
         }
+    }
+
+    /**
+     * Will decide which Arcan runner to add to the project depending on the arguments.
+     * GitRunner - for Java projects
+     * GitCRunner - for C projects
+     *
+     * @return ToolRunner
+     */
+    private ToolRunner getArcanRunner() {
+        ToolRunner arcan;
+
+        if(args.isJavaProject()) {
+            arcan = GitArcanJavaRunner.newGitRunner(project, args);
+        } else {
+            // C project, will use the Arcan C analyzer
+             arcan = GitArcanCRunner.newGitRunner(project, args);
+            }
+        return arcan;
     }
 
     public IProject getProject() throws IOException {

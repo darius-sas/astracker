@@ -7,6 +7,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.rug.data.characteristics.comps.SourceCodeRetriever;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GitVersion extends AbstractVersion {
 

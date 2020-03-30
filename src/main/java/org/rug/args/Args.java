@@ -48,6 +48,9 @@ public class Args {
     @Parameter(names = {"--help", "-h", "-help", "-?"}, help = true)
     public boolean help;
 
+    @Parameter(names = {"-singleVersion", "-sv"}, description = "Running Arcan for the most recent version only.")
+    public boolean singleVersion = false;
+
     public boolean runTracker(){ return !disableTrackerRunner; }
 
     public boolean runProjectSizes(){ return runProjectSizes; }
@@ -127,4 +130,11 @@ public class Args {
         return project.gitRepo != null;
     }
 
+    public boolean isJavaProject() {
+        return project.isJava;
+    }
+
+    public boolean shouldAnalyseSingleVersion() {
+        return singleVersion;
+    }
 }
