@@ -54,12 +54,8 @@ Test reports on coverage are available in `target/site` and output logs are avai
 ASTracker is able to parse the `.graphML` files produced by Arcan representing the system dependency graph and the detected smells.
 In order to be able to detect the versionString of the system analysed,these files must conform to the following naming pattern:
 ```
-<project-name>-<versionString>.graphml
+<index>-<date>-<commitId>.graphml
 ```
-The files must all have the same root directory, hence it is not necessary to have them all under the same folder.
-ASTracker will recursively find all the `.graphml` files in the given folder.
-
-The versions release order shall respect the lexicographical order in order to guarantee a correct tracking.
 
 ### Running Arcan
 ASTracker can also execute Arcan by itself and avoid you the trouble. The only requirement is to provide the input JAR files that conform to the same name convention mentioned for the `.graphml` files.

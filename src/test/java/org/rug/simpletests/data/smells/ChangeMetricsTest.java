@@ -22,8 +22,8 @@ public class ChangeMetricsTest {
     void testCalculate() throws IOException {
         // With this command line you can see the commits that modified a given file:
         // $ git log --first-parent --follow -- <file-name>
-        GitProject pyne = new GitProject("pyne", "/home/fenn/git/pyne", AbstractProject.Type.JAVA);
-        pyne.addSourceDirectory("/home/fenn/git/pyne");
+        GitProject pyne = new GitProject("pyne", "test-data/git-projects/pyne", AbstractProject.Type.JAVA);
+        pyne.addSourceDirectory("test-data/git-projects/pyne");
         pyne.addGraphMLfiles("./test-data/output/arcanOutput/pyne");
 
         var changes = new ChangeMetrics("freqOfChanges");

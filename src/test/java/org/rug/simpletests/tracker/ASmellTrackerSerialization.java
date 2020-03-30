@@ -1,16 +1,43 @@
 package org.rug.simpletests.tracker;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.rug.tracker.ASmellTracker;
 import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.rug.simpletests.TestData.antlr;
+import static org.rug.simpletests.TestData.pure;
 
-public class ASmellTrackerSerialization extends ASmellTrackerTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class ASmellTrackerSerialization{
+
+    protected Map<String, Long> antlrOracle;
+    protected Map<String, Long> pureOracle;
+
+    @BeforeAll
+    void init(){
+        antlrOracle = new HashMap<>();
+        var oracle = new long[]{0, 3, 3, 4, 5, 3, 26, 61, 61, 26, 35, 0, 113, 34, 183, 23, 44,
+                95, 125, 116, 151, 28};
+        int i = 0;
+        for(var v : antlr){
+            antlrOracle.put(v.getVersionString(), oracle[i++]);
+        }
+
+        pureOracle = new HashMap<>();
+        oracle = new long[]{ 0, 997, 108, 1040, 109};
+        i = 0;
+        for (var v : pure){
+            pureOracle.put(v.getVersionString(), oracle[i++]);
+        }
+    }
 
     @Test
     void testSerialization() throws IOException, ClassNotFoundException {

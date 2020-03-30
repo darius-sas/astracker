@@ -38,7 +38,7 @@ public class ASmellTrackerTest {
         }
 
         pureOracle = new HashMap<>();
-        oracle = new long[]{ 0, 997, 108, 1039, 109};
+        oracle = new long[]{ 0, 997, 108, 1040, 109};
         i = 0;
         for (var v : pure){
             pureOracle.put(v.getVersionString(), oracle[i++]);
