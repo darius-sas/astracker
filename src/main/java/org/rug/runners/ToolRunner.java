@@ -15,7 +15,7 @@ import java.util.List;
  */
 public abstract class ToolRunner{
 
-    private final static Logger logger = LoggerFactory.getLogger(ToolRunner.class);
+    protected final static Logger logger = LoggerFactory.getLogger(ToolRunner.class);
 
     private ProcessBuilder builder;
     private String homeDir;

@@ -18,25 +18,22 @@ public class RemoteProjectFetcher {
         this.destination = destination;
     }
 
-
     public Path getProjectPath(String linkOrName) {
         if (this.isValidGitLink(linkOrName)) {
             var name = getProjectName(linkOrName);
             var file = Paths.get(destination.toAbsolutePath().toString(), name);
-            if (this.checkIfAlreadyCloned(file.toFile())) {
-                return file;
-            }else {
+            if (!this.checkIfAlreadyCloned(file.toFile())) {
                 try {
                     var git = Git.cloneRepository()
                         .setURI(linkOrName)
                         .setDirectory(file.toFile()).call();
                     git.close();
-                    return file;
                 } catch (GitAPIException e) {
                     e.printStackTrace();
                     return null;
                 }
             }
+            return file;
         }else {
             return Paths.get(destination.toAbsolutePath().toString(), linkOrName);
         }
@@ -56,7 +53,7 @@ public class RemoteProjectFetcher {
     public String getProjectName(String linkOrName){
         var slashIndex = linkOrName.lastIndexOf("/");
         var dotIndex = linkOrName.lastIndexOf(".");
-        return slashIndex == -1 || dotIndex == -1 ? linkOrName : linkOrName.substring(slashIndex + 1, dotIndex);
+        return slashIndex == -1 || dotIndex == -1 ? linkOrName : linkOrName.substring(slashIndex +1, dotIndex);
     }
 
     public boolean isValidGitLink(String link) {
