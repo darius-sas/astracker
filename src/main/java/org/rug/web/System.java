@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
  */
 public class System {
 
+    private final String name;
     private final TreeMap<Long, String> versions   = new TreeMap<>();
     private final List<Smell>       smells     = new ArrayList<>(100);
     private final List<Component>   components = new ArrayList<>(100);
@@ -24,14 +25,15 @@ public class System {
      * @return an new system object with no smells, components and versions.
      */
     public static System empty(){
-        return new System(TinkerGraph.open());
+        return new System("empty-system",TinkerGraph.open());
     }
 
     /**
      * Build the system starting from the given condensed graph.
      * @param graph a condensed graph.
      */
-    public System(Graph graph){
+    public System(String name, Graph graph){
+        this.name = name;
         this.graph = graph;
         this.graph.traversal().E()
                 .has(ASmellTracker.VERSION)
@@ -49,29 +51,7 @@ public class System {
         }
         return smells;
     }
-
-    /**
-     * All the smells in this system throughout all the versions.
-     *
-     * @return a TreeMap wth a list of smells.
-     */
-    public TreeMap<String, List<Smell>> getSystemSmells() {
-        var map = new TreeMap<String, List<Smell>>();
-        map.put("smells", getSmells());
-        return map;
-    }
-
-    /**
-     * All the smells in this system throughout the mentioned versions.
-     *
-     * @return a TreeMap wth a list of smells.
-     */
-    public TreeMap<String, List<Smell>> getSystemSmells(long startIndex, long endIndex) {
-        var map = new TreeMap<String, List<Smell>>();
-        map.put("smells", getSmells(startIndex, endIndex));
-        return map;
-    }
-
+    
     /**
      * Retrieve the smells that affect at least one version that is contained in the interval [startIndex, endIndex]
      * where startIndex <= endIndex.
@@ -128,6 +108,13 @@ public class System {
         var recentKey = versions.lastKey();
         recentKey = versions.ceilingKey((long)(recentKey * 0.85));
         return Math.max(recentKey, versions.ceilingKey(versions.lastKey() - 25));
+    }
+
+    /**
+     * Get the name of the system.
+     */
+    public String getName() {
+        return name;
     }
 
     /**

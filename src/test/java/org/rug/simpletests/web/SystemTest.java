@@ -24,7 +24,7 @@ public class SystemTest {
     public SystemTest() {
         var graphFile = "./test-data/output/trackASOutput/antlr/condensed-graph-consecOnly.graphml";
         graph.traversal().io(graphFile).read().with(IO.reader, IO.graphml).iterate();
-        system = new System(graph);
+        system = new System("antlr", graph);
     }
 
     @Test
