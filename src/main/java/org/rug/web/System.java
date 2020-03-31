@@ -51,7 +51,7 @@ public class System {
         }
         return smells;
     }
-    
+
     /**
      * Retrieve the smells that affect at least one version that is contained in the interval [startIndex, endIndex]
      * where startIndex <= endIndex.
