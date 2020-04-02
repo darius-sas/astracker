@@ -127,10 +127,18 @@ public class ArgumentMapper {
                     array.add("-projectName");
                     array.add(projectName);
                     array.add("-runArcan");
-                    array.add(requestParameters.get("language").equalsIgnoreCase("java") ? arcanJavaJarPath.toString() : arcanCJarPath.toString());
+                    array.add(requestParameters.get("language")
+                            .equalsIgnoreCase("java")
+                            ? arcanJavaJarPath.toString()
+                            : arcanCJarPath.toString());
                     var projectInputDir = fetcher.getProjectPath(linkOrName);
                     array.add("-gitRepo");
                     array.add(projectInputDir.toString());
+                    break;
+
+                // Used to analyse only a single version with Arcan
+                case "singleVersion":
+                    array.add("-singleVersion");
                     break;
 
                 case "runTracker":
