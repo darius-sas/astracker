@@ -29,8 +29,8 @@ then run the Docker image using:
 ```shell script
 sudo docker run -p 8080:8080 -t astracker
 ```
-Note that, in order for the image to be able to complete the requests you need to first [download](https://drive.google.com/file/d/1u8vYwAE9rrDosyoM33Nvg5YJuXRD_cA_/view?usp=sharing) and save Arcan
-in a directory `arcan` in the root folder of the project (**before building the image**).
+**Note** that, in order for the image to be able to complete the requests you need to first [download](https://drive.google.com/file/d/1u8vYwAE9rrDosyoM33Nvg5YJuXRD_cA_/view?usp=sharing) Arcan1 and unzip the contents
+under `src/main/jib/arcan` and in the root folder (under a folder named `arcan`) of the project (**before building the image**).
 
 # Usage
 ASTracker can be run as any standard executable `.jar` file:
