@@ -161,7 +161,7 @@ public class SystemController {
 
             var graph = TinkerGraph.open();
             graph.traversal().io(graphFile.toAbsolutePath().toString()).read().with(IO.reader, IO.graphml).iterate();
-            cachedSystems.put(systemName, new System(graph));
+            cachedSystems.put(systemName, new System(systemName, graph));
             logger.debug("Successfully loaded {}", systemName);
         }
         return Optional.of(cachedSystems.get(systemName));

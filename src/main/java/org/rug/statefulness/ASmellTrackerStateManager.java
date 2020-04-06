@@ -13,6 +13,10 @@ import java.nio.file.Paths;
 
 import static org.rug.tracker.ASmellTracker.*;
 
+/**
+ * Saves the state of the object that performs the tracking of smells from one version to the next.
+ * This allows to recover an analysis from the last version analysed.
+ */
 public class ASmellTrackerStateManager {
 
     private final static Logger logger = LoggerFactory.getLogger(ASmellTrackerStateManager.class);
@@ -21,10 +25,20 @@ public class ASmellTrackerStateManager {
     private File trackGraph;
     private File trackerFile;
 
+    /**
+     * Instantiate a state manager using the given directory to save the serialized tracker.
+     * @param dir the directory to use. This directory must be specific to a certain project and
+     *            existing files will be overwritten.
+     */
     public ASmellTrackerStateManager(String dir){
         this(new File(dir));
     }
 
+    /**
+     * Instantiate a state manager using the given directory to save the serialized tracker.
+     * @param dir the directory to use. This directory must be specific to a certain project and
+     *            existing files will be overwritten.
+     */
     public ASmellTrackerStateManager(File dir){
         if (!dir.exists()){
             dir.mkdirs();
@@ -38,6 +52,11 @@ public class ASmellTrackerStateManager {
         this.trackerFile = Paths.get(dir.getAbsolutePath(), "tracker.seo").toFile();
     }
 
+    /**
+     * Save the state of the given tracker on file.
+     * @param tracker the object to serialize.
+     * @throws IOException if serialization fails.
+     */
     public void saveState(ASmellTracker tracker) throws IOException {
         try(var outStream = new ObjectOutputStream(new FileOutputStream(trackerFile))) {
             outStream.writeObject(tracker);
@@ -47,8 +66,15 @@ public class ASmellTrackerStateManager {
         }
     }
 
-
-    public ASmellTracker loadState(IProject project, IVersion version) throws IOException, ClassNotFoundException {
+    /**
+     * Instantiate a new the tracker with a recovered state ready to analyse the next version of the given project.
+     * @param project the project.
+     * @param lastVersion the last version in the project.
+     * @return a new instance of AStracker that can analyse the remaining version in the given project.
+     * @throws IOException if deserialization fails.
+     * @throws ClassNotFoundException if deserialization fails.
+     */
+    public ASmellTracker loadState(IProject project, IVersion lastVersion) throws IOException, ClassNotFoundException {
         ASmellTracker tracker;
         try(var inpStream = new ObjectInputStream(new FileInputStream(trackerFile))) {
            tracker = (ASmellTracker) inpStream.readObject();
@@ -61,8 +87,8 @@ public class ASmellTrackerStateManager {
 
         tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
 
-        var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, version.getVersionString()).toSet();
-        var lastVersionSmells = project.getArchitecturalSmellsIn(version);
+        var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersion.getVersionString()).toSet();
+        var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersion);
 
         assert lastVersionSmells.size() == lastVersionSmellVertices.size();
 

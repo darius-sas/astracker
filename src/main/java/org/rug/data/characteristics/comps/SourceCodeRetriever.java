@@ -76,8 +76,9 @@ public abstract class SourceCodeRetriever {
             return "";
         }
         var fileName = toFileName(element);
-        var extension = fileName.substring(fileName.lastIndexOf("."));
-        fileName = fileName.substring(0, fileName.lastIndexOf("."));
+        var dotIndex = fileName.lastIndexOf(".");
+        var extension = dotIndex < 0 ? "" : fileName.substring(dotIndex);
+        fileName = dotIndex < 0 ? fileName : fileName.substring(0, dotIndex);
         return getSource(fileName, extension);
     }
 

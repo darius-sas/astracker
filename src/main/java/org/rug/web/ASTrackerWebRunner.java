@@ -28,10 +28,24 @@ public class ASTrackerWebRunner {
 
     public ASTrackerWebRunner(Map<String, String> requestParameter) {
         try {
-            Files.createDirectory(outputDirectory);
-            Files.createDirectory(Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput"));
-            Files.createDirectory(Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput"));
-            Files.createDirectory(clonedReposDirectory);
+            if (Files.notExists(outputDirectory)) {
+                Files.createDirectory(outputDirectory);
+                logger.info("Created directory {}", outputDirectory.toAbsolutePath().toString());
+            }
+            var trackASoutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput");
+            if (Files.notExists(trackASoutput)) {
+                Files.createDirectory(trackASoutput);
+                logger.info("Created directory {}", trackASoutput.toAbsolutePath().toString());
+            }
+            var arcanOutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput");
+            if (Files.notExists(arcanOutput)) {
+                Files.createDirectory(arcanOutput);
+                logger.info("Created directory {}", arcanOutput.toAbsolutePath().toString());
+            }
+            if (Files.notExists(clonedReposDirectory)) {
+                Files.createDirectory(clonedReposDirectory);
+                logger.info("Created directory {}", clonedReposDirectory.toAbsolutePath().toString());
+            }
         } catch (IOException e) {
             logger.error("Could not create working directories: {}", e.getMessage());
         }
@@ -76,8 +90,8 @@ public class ASTrackerWebRunner {
         if (errorsOccurred) {
             throw new Exception("Unexpected errors have occurred while running runner " + errorRunnerName);
         }
-
         PersistenceHub.closeAll();
+        logger.info("Completed.");
     }
 
     public String getCLIArgs() {
