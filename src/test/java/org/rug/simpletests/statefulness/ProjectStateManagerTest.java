@@ -1,6 +1,7 @@
 package org.rug.simpletests.statefulness;
 
 import org.junit.jupiter.api.Test;
+import org.rug.data.project.AbstractProject;
 import org.rug.data.project.IProject;
 import org.rug.data.project.Project;
 import org.rug.statefulness.ProjectStateManager;
@@ -19,8 +20,9 @@ public class ProjectStateManagerTest {
         testStateSaveAndLoad(antlr);
     }
 
-    void testStateSaveAndLoad(IProject project) throws IOException, ClassNotFoundException {
+    void testStateSaveAndLoad(AbstractProject project) throws IOException, ClassNotFoundException {
         var lastVersion = project.versions().last();
+        var type = project.getProjectType();
 
         var stateManger = new ProjectStateManager("test-data/output/states");
         stateManger.saveState(project);
@@ -28,5 +30,6 @@ public class ProjectStateManagerTest {
         stateManger.loadState(project);
 
         assertEquals(lastVersion, project.versions().first());
+        assertEquals(type, project.getProjectType());
     }
 }

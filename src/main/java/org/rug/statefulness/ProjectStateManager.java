@@ -17,12 +17,11 @@ import java.nio.file.Paths;
  */
 public class ProjectStateManager {
 
-    private final static Logger logger = LogManager.getLogger(ASTrackerWebRunner.class);
+    private final static Logger logger = LogManager.getLogger(ProjectStateManager.class);
 
     private File dir;
     private File savedStateFile;
-    private boolean wasAnalysedBefore;
-
+    private boolean wasAnalysedBefore = false;
 
     /**
      * Initialize the state manager with a directory to use for saving the states.
@@ -39,21 +38,24 @@ public class ProjectStateManager {
     public ProjectStateManager(File dir){
         this.dir = dir;
         if (!dir.exists()){
-            // Directory didnt exist so the analysis was not performed before.
+            // Directory doesn't exist, meaning that the analysis was not performed before
+            // create the directory and the versioning file.
             try {
                 dir.mkdirs();
                 File file = new File(dir.toString() + "/version.seo");
                 file.createNewFile();
                 this.savedStateFile = file;
                 this.wasAnalysedBefore = false;
+                logger.info("The project was not analysed before, creating versioning file: " + file.getPath());
             } catch (IOException e) {
-                logger.error("Could not create the versioning file");
+                logger.error("Could not create the versioning file: " + savedStateFile.getPath());
                 e.printStackTrace();
             }
 
         } else {
             this.wasAnalysedBefore = true;
             this.savedStateFile = Paths.get(dir.getAbsolutePath(), "version.seo").toFile();
+            logger.info("The project was analysed before, loading from versioning file: " + savedStateFile.getPath());
         }
     }
 
@@ -63,7 +65,7 @@ public class ProjectStateManager {
      * @throws IOException if the serialization fails
      */
     public void saveState(IProject project) throws IOException {
-       saveState(project.versions().last());
+        saveState(project.versions().last());
     }
 
     /**
@@ -107,5 +109,9 @@ public class ProjectStateManager {
 
     public File getDir() {
         return dir;
+    }
+
+    public boolean wasAnalysedBefore() {
+        return wasAnalysedBefore;
     }
 }

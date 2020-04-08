@@ -50,6 +50,7 @@ public class ASmellTrackerStateManager {
         this.condensedGraph = Paths.get(dir.getAbsolutePath(), "condensed.graphml").toFile();
         this.trackGraph = Paths.get(dir.getAbsolutePath(), "track.graphml").toFile();
         this.trackerFile = Paths.get(dir.getAbsolutePath(), "tracker.seo").toFile();
+        createFilesIfNotExisting();
     }
 
     /**
@@ -63,6 +64,9 @@ public class ASmellTrackerStateManager {
             tracker.getTrackGraph().traversal().V().properties(ASmellTracker.SMELL_OBJECT).drop().iterate();
             tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
             tracker.getTrackGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("Saving the state of the ASmellTracker failed.");
         }
     }
 
@@ -78,10 +82,15 @@ public class ASmellTrackerStateManager {
         ASmellTracker tracker;
         try(var inpStream = new ObjectInputStream(new FileInputStream(trackerFile))) {
            tracker = (ASmellTracker) inpStream.readObject();
+           logger.debug("Tracker was loaded from file");
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Could not load the tracker from file.");
+            return null;
         }
+
         tracker.setCondensedGraph(TinkerGraph.open());
         tracker.getCondensedGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.reader, IO.graphml).read().iterate();
-
         tracker.setTrackGraph(TinkerGraph.open());
         tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.reader, IO.graphml).read().iterate();
 
@@ -106,4 +115,18 @@ public class ASmellTrackerStateManager {
         return tracker;
     }
 
+    /**
+     * Helper class that will create the neccesary versioning files if they don't exist
+     * already in order to save the state of the analysis.
+     */
+    private void createFilesIfNotExisting() {
+        try {
+            if (!this.condensedGraph.exists()) this.condensedGraph.createNewFile();
+            if (!this.trackGraph.exists()) this.trackGraph.createNewFile();
+            if (!this.trackerFile.exists()) this.trackerFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("Could not create the versioning files for the ASmellTrackerStateManager");
+        }
+    }
 }
