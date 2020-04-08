@@ -31,30 +31,39 @@ public class RemoteProjectFetcher {
      * @throws IOException
      * @throws GitAPIException
      */
-    public Path getProjectPath(String linkOrName) throws IOException, GitAPIException {
+    public Path getProjectPath(String linkOrName) {
         if (this.isValidGitLink(linkOrName)) {
             var name = getProjectName(linkOrName);
             var path = Paths.get(destination.toAbsolutePath().toString(), name);
-            if (!this.checkIfAlreadyCloned(path.toFile())) {
-                // The project is not present locally, clone it from the remote repository.
-                var git = Git.cloneRepository()
-                    .setURI(linkOrName)
-                    .setDirectory(path.toFile()).call();
-                git.close();
-            }
-            // The project has been cloned before, update the branch to the latest version.
-            var git = Git.open(path.toFile());
-            var result = git.pull().setRemote("origin").setRemoteBranchName("master").call();
-            if (!result.isSuccessful()) {
-                logger.warn(String.format(
-                        "Was not able to pull the latest changes from the repository %s",
+            try {
+                if (!this.checkIfAlreadyCloned(path.toFile())) {
+                    // The project is not present locally, clone it from the remote repository.
+                    var git = Git.cloneRepository()
+                            .setURI(linkOrName)
+                            .setDirectory(path.toFile()).call();
+                    git.close();
+                } else {
+                    // The project has been cloned before, update the branch to the latest version.
+                    var git = Git.open(path.toFile());
+                    var result = git.pull().setRemote("origin").setRemoteBranchName("master").call();
+                    if (!result.isSuccessful()) {
+                        logger.warn(String.format(
+                                "Was not able to pull the latest changes from the repository %s",
+                                name
+                        ));
+                    }
+                    return path;
+                }
+            } catch (IOException | GitAPIException e) {
+                e.printStackTrace();
+                logger.error(String.format(
+                        "Was not able to access the given repository %s",
                         name
                 ));
+                return null;
             }
-            return path;
-        } else {
-            return Paths.get(destination.toAbsolutePath().toString(), linkOrName);
         }
+        return Paths.get(destination.toAbsolutePath().toString(), linkOrName);
     }
 
     /**
