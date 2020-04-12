@@ -23,18 +23,20 @@ public class TrackASRunner extends ToolRunner {
     private IProject project;
     private boolean trackNonConsecutiveVersions;
 
-    public TrackASRunner(IProject project, boolean trackNonConsecutiveVersions) {
+    public TrackASRunner(
+            IProject project,
+            ASmellTracker tracker,
+            boolean trackNonConsecutiveVersions
+    ) {
         super("trackas", "");
         this.project = project;
         this.trackNonConsecutiveVersions = trackNonConsecutiveVersions;
+        this.tracker = tracker;
     }
 
     @Override
     public int run() {
-        tracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), trackNonConsecutiveVersions);
-
         var componentCharacteristics = new ComponentCharacteristicSet().getCharacteristicSet();
-
         logger.info("Starting tracking architectural smells of {} for {} versions", project.getName(), project.numberOfVersions());
         logger.info("Tracking non consecutive versions: {}", trackNonConsecutiveVersions ? "yes" : "no");
 

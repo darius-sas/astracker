@@ -40,6 +40,7 @@ public class Analysis {
         this.args = args;
         this.runners = new ArrayList<>();
         this.project = buildProjectFromArgs(args);
+//        this.project.addGraphMLfiles("./output-folder/arcanOutput/"+ args.project.name);
         this.aSmellTracker = new ASmellTracker(
                 new SimpleNameJaccardSimilarityLinker(),
                 args.trackNonConsecutiveVersions
@@ -66,61 +67,57 @@ public class Analysis {
     }
 
     private void init() throws IOException{
-        if (project == null) {
-            project = getProject();
-
-            if (args.runArcan()) {
-                runners.add(getArcanRunner());
-            } else if (isGraphMLProject()){
-                    project.addGraphMLfiles(args.getHomeProjectDirectory());
-            } else if (args.project.isJar) {
-                project.addSourceDirectory(args.getHomeProjectDirectory());
-                var outputDir = args.getArcanOutDir();
-                project.forEach(version -> {
-                    Path outputDirVers = Paths.get(outputDir, version.getVersionString());
-                    if (outputDirVers.toFile().mkdirs() && version instanceof Version) {
-                        var arcan = new ArcanRunner(args.getArcanJarFile(), (Version) version,
-                                outputDirVers.toString(), project.isFolderOfFoldersOfSourcesProject(), false);
-                        arcan.setHomeDir(args.getHomeProjectDirectory());
-                        arcan.inheritOutput(args.showArcanOutput);
-                        runners.add(arcan);
-                    }
-                });
-                args.adjustProjDirToArcanOutput();
-                project.addGraphMLfiles(args.getHomeProjectDirectory());
-            } else {
-                throw new IllegalArgumentException("Cannot parse project files.");
-            }
-
-            if (args.runTracker()){
-                runners.add(new TrackASRunner(project, args.trackNonConsecutiveVersions));
-
-                if (args.similarityScores) {
-                    PersistenceHub.register(new SmellSimilarityDataGenerator(args.getSimilarityScoreFile()));
+        if (args.runArcan()) {
+            runners.add(getArcanRunner());
+        } else if (isGraphMLProject()){
+            project.addGraphMLfiles(args.getHomeProjectDirectory());
+        } else if (args.project.isJar) {
+            project.addSourceDirectory(args.getHomeProjectDirectory());
+            var outputDir = args.getArcanOutDir();
+            project.forEach(version -> {
+                Path outputDirVers = Paths.get(outputDir, version.getVersionString());
+                if (outputDirVers.toFile().mkdirs() && version instanceof Version) {
+                    var arcan = new ArcanRunner(args.getArcanJarFile(), (Version) version,
+                            outputDirVers.toString(), project.isFolderOfFoldersOfSourcesProject(), false);
+                    arcan.setHomeDir(args.getHomeProjectDirectory());
+                    arcan.inheritOutput(args.showArcanOutput);
+                    runners.add(arcan);
                 }
+            });
+            args.adjustProjDirToArcanOutput();
+            project.addGraphMLfiles(args.getHomeProjectDirectory());
+        } else {
+            throw new IllegalArgumentException("Cannot parse project files.");
+        }
 
-                if (args.smellCharacteristics) {
-                    PersistenceHub.register(new SmellCharacteristicsGenerator(args.getSmellCharacteristicsFile(), project));
-                    PersistenceHub.register(new ComponentAffectedByGenerator(args.getAffectedComponentsFile()));
-                }
+        if (args.runTracker()){
+            runners.add(new TrackASRunner(project, aSmellTracker, args.shouldAnalyseSingleVersion()));
 
-                if (args.componentCharacteristics){
-                    PersistenceHub.register(new ComponentMetricGenerator(args.getComponentCharacteristicsFile()));
-                }
-
-                PersistenceHub.register(new CondensedGraphGenerator(args.getCondensedGraphFile()));
-                PersistenceHub.register(new TrackGraphGenerator(args.getTrackGraphFileName()));
+            if (args.similarityScores) {
+                PersistenceHub.register(new SmellSimilarityDataGenerator(args.getSimilarityScoreFile()));
             }
 
-            if (args.runProjectSizes()){
-                runners.add(new ProjecSizeRunner(project));
-                PersistenceHub.register(new ProjectSizeGenerator(args.getProjectSizesFile()));
+            if (args.smellCharacteristics) {
+                PersistenceHub.register(new SmellCharacteristicsGenerator(args.getSmellCharacteristicsFile(), project));
+                PersistenceHub.register(new ComponentAffectedByGenerator(args.getAffectedComponentsFile()));
             }
 
-            if (args.runFanInFanOutCounter()){
-                runners.add(new FanInFanOutCounterRunner(project));
-                PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
+            if (args.componentCharacteristics){
+                PersistenceHub.register(new ComponentMetricGenerator(args.getComponentCharacteristicsFile()));
             }
+
+            PersistenceHub.register(new CondensedGraphGenerator(args.getCondensedGraphFile()));
+            PersistenceHub.register(new TrackGraphGenerator(args.getTrackGraphFileName()));
+        }
+
+        if (args.runProjectSizes()){
+            runners.add(new ProjecSizeRunner(project));
+            PersistenceHub.register(new ProjectSizeGenerator(args.getProjectSizesFile()));
+        }
+
+        if (args.runFanInFanOutCounter()){
+            runners.add(new FanInFanOutCounterRunner(project));
+            PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
         }
     }
 
