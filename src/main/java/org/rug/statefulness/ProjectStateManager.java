@@ -92,6 +92,10 @@ public class ProjectStateManager {
         try(var ois = new ObjectInputStream(new FileInputStream(this.savedStateFile))) {
             lastVersionString = (String) ois.readObject();
             lastVersionposition = (long) ois.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("Could not load the state from the ProjectStateManager");
+            return;
         }
         if (instance.getVersionedSystem().containsKey(lastVersionString)){
             instance.setVersionedSystem(instance.getVersionedSystem().tailMap(lastVersionString));

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import static org.rug.tracker.ASmellTracker.*;
 
@@ -73,12 +74,12 @@ public class ASmellTrackerStateManager {
     /**
      * Instantiate a new the tracker with a recovered state ready to analyse the next version of the given project.
      * @param project the project.
-     * @param lastVersion the last version in the project.
+     * @param lastVersionAnalysed the last version in the project that was analysed.
      * @return a new instance of AStracker that can analyse the remaining version in the given project.
      * @throws IOException if deserialization fails.
      * @throws ClassNotFoundException if deserialization fails.
      */
-    public ASmellTracker loadState(IProject project, IVersion lastVersion) throws IOException, ClassNotFoundException {
+    public ASmellTracker loadState(IProject project, IVersion lastVersionAnalysed) throws IOException, ClassNotFoundException {
         ASmellTracker tracker;
         try(var inpStream = new ObjectInputStream(new FileInputStream(trackerFile))) {
            tracker = (ASmellTracker) inpStream.readObject();
@@ -94,10 +95,15 @@ public class ASmellTrackerStateManager {
         tracker.setTrackGraph(TinkerGraph.open());
         tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.reader, IO.graphml).read().iterate();
 
-        tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
 
-        var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersion.getVersionString()).toSet();
-        var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersion);
+        try {
+            tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+        }
+
+        var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersionAnalysed.getVersionString()).toSet();
+        var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersionAnalysed);
 
         assert lastVersionSmells.size() == lastVersionSmellVertices.size();
 
