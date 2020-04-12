@@ -4,8 +4,10 @@ import com.beust.jcommander.JCommander;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.rug.Analysis;
+import org.rug.data.project.IProject;
+import org.rug.statefulness.ASmellTrackerStateManager;
+import org.rug.statefulness.ProjectStateManager;
 import org.rug.web.helpers.ArgumentMapper;
-import org.rug.web.helpers.RemoteProjectFetcher;
 import org.rug.args.Args;
 import org.rug.persistence.PersistenceHub;
 
@@ -13,8 +15,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
 import java.util.Map;
+
+import static org.rug.Analysis.buildProjectFromArgs;
+import static org.rug.web.WebAnalysisController.*;
 
 public class ASTrackerWebRunner {
 
@@ -24,7 +28,10 @@ public class ASTrackerWebRunner {
     private static final Path arcanJavaJar = Paths.get("arcan/Arcan-1.4.0-SNAPSHOT/Arcan-1.4.0-SNAPSHOT.jar");
     private static final Path arcanCppJar  = Paths.get("arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar");
     private static final Path outputDirectory = Paths.get("./output-folder");
+    private static final Path statesDirectory = Paths.get("./states");
     private static final Path clonedReposDirectory = Paths.get("./cloned-projects");
+    private Path arcanOutput;
+    private Path trackASoutput;
 
     public ASTrackerWebRunner(Map<String, String> requestParameter) {
         try {
@@ -32,12 +39,13 @@ public class ASTrackerWebRunner {
                 Files.createDirectory(outputDirectory);
                 logger.info("Created directory {}", outputDirectory.toAbsolutePath().toString());
             }
-            var trackASoutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput");
+            trackASoutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput");
             if (Files.notExists(trackASoutput)) {
                 Files.createDirectory(trackASoutput);
                 logger.info("Created directory {}", trackASoutput.toAbsolutePath().toString());
             }
-            var arcanOutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput");
+
+            arcanOutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput");
             if (Files.notExists(arcanOutput)) {
                 Files.createDirectory(arcanOutput);
                 logger.info("Created directory {}", arcanOutput.toAbsolutePath().toString());
@@ -46,9 +54,15 @@ public class ASTrackerWebRunner {
                 Files.createDirectory(clonedReposDirectory);
                 logger.info("Created directory {}", clonedReposDirectory.toAbsolutePath().toString());
             }
+            if (Files.notExists(statesDirectory)) {
+                Files.createDirectory(statesDirectory);
+                logger.info("Created directory {}", statesDirectory.toAbsolutePath().toString());
+            }
         } catch (IOException e) {
+            e.printStackTrace();
             logger.error("Could not create working directories: {}", e.getMessage());
         }
+
         this.mapper = new ArgumentMapper(arcanJavaJar, arcanCppJar, outputDirectory, clonedReposDirectory, requestParameter);
     }
 
@@ -59,23 +73,40 @@ public class ASTrackerWebRunner {
      *
      * @return String
      */
-    public void run() throws Exception {
+    public Result run() throws Exception {
         PersistenceHub.clearAll();
+        Args args = buildArgumentsList();
+        Analysis analysis;
 
-        var mapping = this.mapper.getArgumentsMapping();
-        if (mapping.length == 1) {
-            throw new IllegalArgumentException("Request malformed due to illegal arguments provided.");
+        var projectStatesDirectory = Paths.get(statesDirectory.toString(), getProjectName()).toString();
+        var projectStateManager = new ProjectStateManager(projectStatesDirectory);
+        var aSmellTrackerStateManager = new ASmellTrackerStateManager(projectStatesDirectory);
+
+        if (projectStateManager.wasAnalysedBefore()) {
+
+            IProject project = buildProjectFromArgs(args);
+            project.addGraphMLfiles(arcanOutput.toString()+ '/'+ args.project.name);
+
+            //Load the previous state of the project
+            projectStateManager.loadState(project);
+            logger.debug("The previous state has been loaded");
+            if (project.getVersionedSystem().size() == 1) {
+                logger.info("The project is already analysed. No need to perform the analysis again");
+                return Result.SKIPPED;
+            }
+
+            // initialize an ASmellTracker object from the project state
+            var lastVersionAnalysed = project.versions().first();
+            var aSmellTracker = aSmellTrackerStateManager.loadState(project, lastVersionAnalysed);
+            logger.info("The ASmellTrackerStateManager has been successfully loaded.");
+            analysis = new Analysis(args, aSmellTracker, project);
+            logger.debug("Analysis is ready to be resumed.");
+
+        } else {
+            // Run the analysis from the beginning.
+            args = buildArgumentsList();
+            analysis = new Analysis(args);
         }
-
-        Args args = new Args();
-        JCommander jc = JCommander.newBuilder()
-                .addObject(args)
-                .build();
-
-        jc.setProgramName("java -jar astracker.jar");
-        jc.parse(mapping);
-
-        Analysis analysis = new Analysis(args);
 
         boolean errorsOccurred = false;
         String errorRunnerName = "";
@@ -90,31 +121,39 @@ public class ASTrackerWebRunner {
         if (errorsOccurred) {
             throw new Exception("Unexpected errors have occurred while running runner " + errorRunnerName);
         }
+
+        projectStateManager.saveState(analysis.getProject());
+        aSmellTrackerStateManager.saveState(analysis.getASmellTracker());
+        logger.info("The state of the analysis has been saved.");
+
         PersistenceHub.closeAll();
         logger.info("Completed.");
-    }
-
-    public String getCLIArgs() {
-        return this.mapper.toString();
-    }
-
-    public String getProjectName(){
-        return this.mapper.getProjectName();
+        return Result.SUCCESS;
     }
 
     /**
-     * Will return the help menu as if using -help in the CLI
-     *
-     * @return String
+     * Will instantiate an {@link Args} object using the arguments extracted from the request.
+     * @return
+     * @throws IOException
      */
-    public String getHelp() {
+    private Args buildArgumentsList() throws Exception {
+        var mapping = this.mapper.getArgumentsMapping();
+        if (mapping.length == 1) {
+            throw new IllegalArgumentException("Request malformed due to illegal arguments provided.");
+        }
+
         Args args = new Args();
         JCommander jc = JCommander.newBuilder()
                 .addObject(args)
                 .build();
 
-        StringBuilder var1 = new StringBuilder();
-        jc.usage(var1);
-        return var1.toString();
+        jc.setProgramName("java -jar astracker.jar");
+        jc.parse(mapping);
+
+        return args;
+    }
+
+    public String getProjectName(){
+        return this.mapper.getProjectName();
     }
 }
