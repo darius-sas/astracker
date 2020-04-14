@@ -10,6 +10,6 @@ public class TrackGraphGenerator extends GraphDataGenerator<ASmellTracker> {
 
     @Override
     public void accept(ASmellTracker object) {
-        super.graph = object.getFinalizedTrackGraph();
+        super.graph = object.getTrackGraph();
     }
 }

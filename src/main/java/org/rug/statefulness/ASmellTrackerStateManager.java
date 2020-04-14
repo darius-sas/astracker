@@ -57,14 +57,13 @@ public class ASmellTrackerStateManager {
     /**
      * Save the state of the given tracker on file.
      * @param tracker the object to serialize.
-     * @throws IOException if serialization fails.
      */
-    public void saveState(ASmellTracker tracker) throws IOException {
+    public void saveState(ASmellTracker tracker) {
         try(var outStream = new ObjectOutputStream(new FileOutputStream(trackerFile))) {
             outStream.writeObject(tracker);
             tracker.getTrackGraph().traversal().V().properties(ASmellTracker.SMELL_OBJECT).drop().iterate();
             tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
-            tracker.getTrackGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
+            tracker.getCondensedGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
         } catch (IOException e) {
             e.printStackTrace();
             logger.error("Saving the state of the ASmellTracker failed.");
@@ -95,12 +94,7 @@ public class ASmellTrackerStateManager {
         tracker.setTrackGraph(TinkerGraph.open());
         tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.reader, IO.graphml).read().iterate();
 
-
-        try {
-            tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
-        } catch (NoSuchElementException e) {
-            e.printStackTrace();
-        }
+        tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
 
         var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersionAnalysed.getVersionString()).toSet();
         var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersionAnalysed);
