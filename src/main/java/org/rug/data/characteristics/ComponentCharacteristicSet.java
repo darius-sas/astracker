@@ -19,7 +19,7 @@ public class ComponentCharacteristicSet {
         characteristics.add(new ChangeMetrics(ChangeMetrics.NAME));
         characteristics.add(new PCCCMetric(ChangeMetrics.NAME));
         characteristics.add(new CHOMetricPackage());
-        characteristics.add(new PCPCMetric());
+        characteristics.add(new PCPCMetric(ChangeMetrics.NAME));
         characteristics.add(new TACHMetricPackage());
     }
 

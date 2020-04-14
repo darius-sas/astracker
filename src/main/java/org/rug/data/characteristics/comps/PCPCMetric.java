@@ -16,11 +16,13 @@ import java.util.Map;
 public class PCPCMetric extends AbstractComponentCharacteristic {
 
     private long totalCommits = 2;
+    private String frchMetricName;
     private Map<String, Long> packageChanges;
 
-    public PCPCMetric() {
+    public PCPCMetric(String frchMetricName) {
         super("percCommitsPackChanged", VertexLabel.allComponents(), EnumSet.noneOf(EdgeLabel.class));
         packageChanges = new HashMap<>(1000);
+        this.frchMetricName = frchMetricName;
     }
 
     @Override
@@ -38,6 +40,7 @@ public class PCPCMetric extends AbstractComponentCharacteristic {
             if (vertex.value(CHOMetricPackage.NAME)) {
                 packageChanges.compute(name, (k, v) -> v == null ? 1L : v + 1);
             }
+            vertex.property(this.frchMetricName, packageChanges.getOrDefault(name, 0L));
             vertex.property(this.name, (packageChanges.getOrDefault(name, 0L) * 100d) / totalCommits);
         }
     }
