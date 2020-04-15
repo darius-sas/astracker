@@ -3,10 +3,12 @@ package org.rug.web;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +51,7 @@ public class WebAnalysisController {
             result.setMessage("No message.");
         } catch (Exception e) {
             logger.error("Internal server error: {}", e.getMessage());
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             result.setResult(Result.FAILED);
             result.setMessage(e.getMessage());
