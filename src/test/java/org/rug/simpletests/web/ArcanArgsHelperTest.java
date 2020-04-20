@@ -1,11 +1,14 @@
 package org.rug.simpletests.web;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.args.Args;
 import org.rug.web.helpers.ArcanArgsHelper;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -41,7 +44,11 @@ public class ArcanArgsHelperTest {
     }
 
     @Test
-    void testGetSingleVersionArguments() {
+    void testGetSingleVersionArguments() throws IOException, GitAPIException {
+        Git.open(Paths.get(String.valueOf(inputDir), "pyne").toAbsolutePath().toFile())
+                .checkout()
+                .setName("072567a0f448c891053d2c418596c200827a895f")
+                .call();
         var versionId = String.format(
                 "1-%s-%s",
                 "27_10_2019",

@@ -1,4 +1,4 @@
-package org.rug.runners;
+package org.rug.simpletests.runners;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -7,6 +7,7 @@ import org.rug.data.labels.EdgeLabel;
 import org.rug.data.labels.VertexLabel;
 import org.rug.persistence.EdgeCountGenerator;
 import org.rug.persistence.PersistenceHub;
+import org.rug.runners.FanInFanOutCounterRunner;
 
 import static org.rug.simpletests.TestData.antlr;
 
