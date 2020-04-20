@@ -3,7 +3,6 @@ package org.rug.data.project;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.rug.data.characteristics.comps.SourceCodeRetriever;
 
-import java.io.Serializable;
 import java.nio.file.Path;
 
 /**

@@ -3,17 +3,14 @@ package org.rug.simpletests.web;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.web.WebAnalysisController;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.util.FileSystemUtils;
 
-import javax.servlet.http.HttpServletResponse;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WebAnalysisControllerTest {

@@ -13,12 +13,7 @@ import org.rug.tracker.ASmellTracker;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.rug.tracker.ASmellTracker.*;
 

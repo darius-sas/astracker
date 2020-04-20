@@ -1,19 +1,15 @@
 package org.rug.simpletests.web;
 
-import org.eclipse.jgit.lib.AnyObjectId;
-import org.eclipse.jgit.lib.ObjectId;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.args.Args;
 import org.rug.web.helpers.ArcanArgsHelper;
-import org.rug.web.helpers.RemoteProjectFetcher;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ArcanArgsHelperTest {
@@ -51,8 +47,7 @@ public class ArcanArgsHelperTest {
                 "27_10_2019",
                 "072567a0f448c891053d2c418596c200827a895f"
         );
-        var singleVersionArgs = this.args;
-        singleVersionArgs.singleVersion = true;
+        this.args.singleVersion = true;
 
         var expectedString = String.format(
                 " -versionId %s -p %s -out %s -branch master",
@@ -63,7 +58,7 @@ public class ArcanArgsHelperTest {
 
         assertEquals(
                 expectedString,
-                arcanArgsHelper.getSingleVersionArguments(singleVersionArgs)
+                arcanArgsHelper.getSingleVersionArguments(this.args)
         );
     }
 }

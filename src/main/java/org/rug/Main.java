@@ -6,13 +6,6 @@ import org.rug.persistence.PersistenceHub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.DecimalFormat;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Timer;
-
 /**
  * Main entry point of the system.
  */

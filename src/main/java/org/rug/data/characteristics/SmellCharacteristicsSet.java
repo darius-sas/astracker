@@ -4,7 +4,6 @@ import org.rug.data.characteristics.smells.*;
 import org.rug.data.smells.ArchitecturalSmell;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 

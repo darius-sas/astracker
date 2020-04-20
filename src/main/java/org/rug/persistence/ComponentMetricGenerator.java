@@ -6,7 +6,10 @@ import org.rug.data.characteristics.IComponentCharacteristic;
 import org.rug.data.labels.VertexLabel;
 import org.rug.data.project.IVersion;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

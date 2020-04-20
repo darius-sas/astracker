@@ -4,12 +4,12 @@ import com.beust.jcommander.JCommander;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.rug.Analysis;
+import org.rug.args.Args;
 import org.rug.data.project.IProject;
+import org.rug.persistence.PersistenceHub;
 import org.rug.statefulness.ASmellTrackerStateManager;
 import org.rug.statefulness.ProjectStateManager;
 import org.rug.web.helpers.ArgumentMapper;
-import org.rug.args.Args;
-import org.rug.persistence.PersistenceHub;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.rug.Analysis.buildProjectFromArgs;
-import static org.rug.web.WebAnalysisController.*;
+import static org.rug.web.WebAnalysisController.Result;
 
 public class ASTrackerWebRunner {
 

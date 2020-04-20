@@ -2,7 +2,6 @@ package org.rug.simpletests.statefulness;
 
 import org.junit.jupiter.api.Test;
 import org.rug.data.project.AbstractProject;
-import org.rug.data.project.IProject;
 import org.rug.data.project.Project;
 import org.rug.statefulness.ProjectStateManager;
 

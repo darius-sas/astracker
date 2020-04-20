@@ -2,11 +2,9 @@ package org.rug.runners;
 
 import org.rug.data.characteristics.ComponentCharacteristicSet;
 import org.rug.data.project.IProject;
-import org.rug.data.project.IVersion;
 import org.rug.data.smells.ArchitecturalSmell;
 import org.rug.persistence.*;
 import org.rug.tracker.ASmellTracker;
-import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

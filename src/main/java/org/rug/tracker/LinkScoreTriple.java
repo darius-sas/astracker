@@ -3,8 +3,6 @@ package org.rug.tracker;
 import org.rug.data.smells.ArchitecturalSmell;
 import org.rug.data.util.Triple;
 
-import java.io.Serializable;
-
 /**
  * Convenience class to represent a tracking triple and adequately compare between two triples based
  * on the smells.

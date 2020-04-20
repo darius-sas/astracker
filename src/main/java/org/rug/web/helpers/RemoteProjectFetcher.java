@@ -52,8 +52,8 @@ public class RemoteProjectFetcher {
                                 name
                         ));
                     }
-                    return path;
                 }
+                return path;
             } catch (IOException | GitAPIException e) {
                 e.printStackTrace();
                 logger.error(String.format(

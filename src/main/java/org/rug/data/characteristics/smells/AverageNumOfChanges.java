@@ -1,12 +1,7 @@
 package org.rug.data.characteristics.smells;
 
-import org.rug.data.characteristics.comps.ChangeMetrics;
 import org.rug.data.characteristics.comps.PCCCMetric;
-import org.rug.data.smells.ArchitecturalSmell;
-import org.rug.data.smells.CDSmell;
-import org.rug.data.smells.GCSmell;
-import org.rug.data.smells.HLSmell;
-import org.rug.data.smells.UDSmell;
+import org.rug.data.smells.*;
 
 /**
  * This characteristic computes the average number of times the components affected by a given smell

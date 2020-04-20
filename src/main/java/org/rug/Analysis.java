@@ -2,7 +2,6 @@ package org.rug;
 
 import org.rug.args.Args;
 import org.rug.data.project.*;
-import org.rug.data.project.AbstractProject.Type;
 import org.rug.persistence.*;
 import org.rug.runners.*;
 import org.rug.tracker.ASmellTracker;

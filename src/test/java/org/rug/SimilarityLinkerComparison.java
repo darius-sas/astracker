@@ -3,7 +3,6 @@ package org.rug;
 import org.junit.jupiter.api.Test;
 import org.rug.data.project.Project;
 import org.rug.data.smells.ArchitecturalSmell;
-import org.rug.persistence.PersistenceHub;
 import org.rug.persistence.SmellCharacteristicsGenerator;
 import org.rug.persistence.SmellSimilarityDataGenerator;
 import org.rug.tracker.ASmellTracker;

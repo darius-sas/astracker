@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.data.project.IProject;
-import org.rug.simpletests.tracker.ASmellTrackerTest;
 import org.rug.statefulness.ASmellTrackerStateManager;
 import org.rug.tracker.ASmellTracker;
 import org.rug.tracker.SimpleNameJaccardSimilarityLinker;

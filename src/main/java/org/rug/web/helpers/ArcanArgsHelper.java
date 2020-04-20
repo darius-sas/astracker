@@ -104,7 +104,7 @@ public class ArcanArgsHelper {
         Git git = null;
         AnyObjectId lastCommitId = null;
         try {
-            git = Git.init().setDirectory(new File(path.toString())).call();
+            git = Git.init().setDirectory(path.toFile()).call();
             lastCommitId = git.getRepository().resolve(Constants.HEAD);
 
         } catch (GitAPIException | IOException e) {

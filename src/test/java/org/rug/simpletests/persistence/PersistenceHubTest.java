@@ -1,20 +1,21 @@
 package org.rug.simpletests.persistence;
 
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.rug.data.smells.ArchitecturalSmell;
 import org.rug.persistence.CondensedGraphGenerator;
 import org.rug.persistence.PersistenceHub;
 import org.rug.persistence.SmellCharacteristicsGenerator;
 import org.rug.persistence.TrackGraphGenerator;
 import org.rug.tracker.ASmellTracker;
-import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static org.rug.simpletests.TestData.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.rug.simpletests.TestData.antlr;
+import static org.rug.simpletests.TestData.trackASOutputDir;
 
 @Tag("unitTests")
 public class PersistenceHubTest {

@@ -7,13 +7,13 @@ import org.junit.jupiter.api.TestInstance;
 import org.rug.web.helpers.ArgumentMapper;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ArgumentMapperTest {

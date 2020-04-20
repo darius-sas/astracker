@@ -1,20 +1,8 @@
 package org.rug.runners;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.AnyObjectId;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.rug.args.Args;
 import org.rug.data.project.IProject;
 import org.rug.web.helpers.ArcanArgsHelper;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Calendar;
 
 public class GitArcanCRunner extends AbstractGitArcanRunner {
 

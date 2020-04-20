@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.NoSuchElementException;
 
-import static org.rug.tracker.ASmellTracker.*;
+import static org.rug.tracker.ASmellTracker.TAIL;
+import static org.rug.tracker.ASmellTracker.VERSION;
 
 /**
  * Saves the state of the object that performs the tracking of smells from one version to the next.
