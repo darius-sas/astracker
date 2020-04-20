@@ -5,6 +5,8 @@ import org.rug.data.project.*;
 import org.rug.data.project.AbstractProject.Type;
 import org.rug.persistence.*;
 import org.rug.runners.*;
+import org.rug.tracker.ASmellTracker;
+import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,69 +28,96 @@ public class Analysis {
     private final Args args;
     private IProject project;
     private final List<ToolRunner> runners;
+    private ASmellTracker aSmellTracker;
 
+    /**
+     * General constructor that can be used to analyse all the versions on a project.
+     *
+     * @param args
+     * @throws IOException
+     */
     public Analysis(Args args) throws IOException {
         this.args = args;
         this.runners = new ArrayList<>();
+        this.project = buildProjectFromArgs(args);
+//        this.project.addGraphMLfiles("./output-folder/arcanOutput/"+ args.project.name);
+        this.aSmellTracker = new ASmellTracker(
+                new SimpleNameJaccardSimilarityLinker(),
+                args.trackNonConsecutiveVersions
+        );
+        logger.info("Repo: " + args.getGitRepo().getAbsolutePath());
+        init();
+    }
+
+    /**
+     * Initializes a constructor with an already instantiated {@link ASmellTracker}. This object
+     * will be passed to the {@link TrackASRunner}, so that the analysis  can be resumed
+     * from a given version instead of analysing the whole project.
+     *
+     * @param args
+     * @param aSmellTracker
+     * @throws IOException
+     */
+    public Analysis(Args args, ASmellTracker aSmellTracker, IProject project) throws IOException {
+        this.args = args;
+        this.runners = new ArrayList<>();
+        this.aSmellTracker = aSmellTracker;
+        this.project = project;
         init();
     }
 
     private void init() throws IOException{
-        if (project == null) {
-            project = getProject();
-
-            if (args.runArcan()) {
-                runners.add(getArcanRunner());
-            } else if (isGraphMLProject()){
-                    project.addGraphMLfiles(args.getHomeProjectDirectory());
-            } else if (args.project.isJar) {
-                project.addSourceDirectory(args.getHomeProjectDirectory());
-                var outputDir = args.getArcanOutDir();
-                project.forEach(version -> {
-                    Path outputDirVers = Paths.get(outputDir, version.getVersionString());
-                    if (outputDirVers.toFile().mkdirs() && version instanceof Version) {
-                        var arcan = new ArcanRunner(args.getArcanJarFile(), (Version) version,
-                                outputDirVers.toString(), project.isFolderOfFoldersOfSourcesProject(), false);
-                        arcan.setHomeDir(args.getHomeProjectDirectory());
-                        arcan.inheritOutput(args.showArcanOutput);
-                        runners.add(arcan);
-                    }
-                });
-                args.adjustProjDirToArcanOutput();
-                project.addGraphMLfiles(args.getHomeProjectDirectory());
-            } else {
-                throw new IllegalArgumentException("Cannot parse project files.");
-            }
-
-            if (args.runTracker()){
-                runners.add(new TrackASRunner(project, args.trackNonConsecutiveVersions));
-
-                if (args.similarityScores) {
-                    PersistenceHub.register(new SmellSimilarityDataGenerator(args.getSimilarityScoreFile()));
+        if (args.runArcan()) {
+            runners.add(getArcanRunner());
+        } else if (isGraphMLProject()){
+            project.addGraphMLfiles(args.getHomeProjectDirectory());
+        } else if (args.project.isJar) {
+            project.addSourceDirectory(args.getHomeProjectDirectory());
+            var outputDir = args.getArcanOutDir();
+            project.forEach(version -> {
+                Path outputDirVers = Paths.get(outputDir, version.getVersionString());
+                if (outputDirVers.toFile().mkdirs() && version instanceof Version) {
+                    var arcan = new ArcanRunner(args.getArcanJarFile(), (Version) version,
+                            outputDirVers.toString(), project.isFolderOfFoldersOfSourcesProject(), false);
+                    arcan.setHomeDir(args.getHomeProjectDirectory());
+                    arcan.inheritOutput(args.showArcanOutput);
+                    runners.add(arcan);
                 }
+            });
+            args.adjustProjDirToArcanOutput();
+            project.addGraphMLfiles(args.getHomeProjectDirectory());
+        } else {
+            throw new IllegalArgumentException("Cannot parse project files.");
+        }
 
-                if (args.smellCharacteristics) {
-                    PersistenceHub.register(new SmellCharacteristicsGenerator(args.getSmellCharacteristicsFile(), project));
-                    PersistenceHub.register(new ComponentAffectedByGenerator(args.getAffectedComponentsFile()));
-                }
+        if (args.runTracker()){
+            runners.add(new TrackASRunner(project, aSmellTracker, args.shouldAnalyseSingleVersion()));
 
-                if (args.componentCharacteristics){
-                    PersistenceHub.register(new ComponentMetricGenerator(args.getComponentCharacteristicsFile()));
-                }
-
-                PersistenceHub.register(new CondensedGraphGenerator(args.getCondensedGraphFile()));
-                PersistenceHub.register(new TrackGraphGenerator(args.getTrackGraphFileName()));
+            if (args.similarityScores) {
+                PersistenceHub.register(new SmellSimilarityDataGenerator(args.getSimilarityScoreFile()));
             }
 
-            if (args.runProjectSizes()){
-                runners.add(new ProjecSizeRunner(project));
-                PersistenceHub.register(new ProjectSizeGenerator(args.getProjectSizesFile()));
+            if (args.smellCharacteristics) {
+                PersistenceHub.register(new SmellCharacteristicsGenerator(args.getSmellCharacteristicsFile(), project));
+                PersistenceHub.register(new ComponentAffectedByGenerator(args.getAffectedComponentsFile()));
             }
 
-            if (args.runFanInFanOutCounter()){
-                runners.add(new FanInFanOutCounterRunner(project));
-                PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
+            if (args.componentCharacteristics){
+                PersistenceHub.register(new ComponentMetricGenerator(args.getComponentCharacteristicsFile()));
             }
+
+            PersistenceHub.register(new CondensedGraphGenerator(args.getCondensedGraphFile()));
+            PersistenceHub.register(new TrackGraphGenerator(args.getTrackGraphFileName()));
+        }
+
+        if (args.runProjectSizes()){
+            runners.add(new ProjecSizeRunner(project));
+            PersistenceHub.register(new ProjectSizeGenerator(args.getProjectSizesFile()));
+        }
+
+        if (args.runFanInFanOutCounter()){
+            runners.add(new FanInFanOutCounterRunner(project));
+            PersistenceHub.register(new EdgeCountGenerator(args.getFanInFanOutFile()));
         }
     }
 
@@ -100,42 +129,50 @@ public class Analysis {
      * @return ToolRunner
      */
     private ToolRunner getArcanRunner() {
-        ToolRunner arcan;
+        ToolRunner arcanRunner;
 
         if(args.isJavaProject()) {
-            arcan = GitArcanJavaRunner.newGitRunner(project, args);
+            arcanRunner = GitArcanJavaRunner.newGitRunner(project, args);
         } else {
             // C project, will use the Arcan C analyzer
-             arcan = GitArcanCRunner.newGitRunner(project, args);
+             arcanRunner = GitArcanCRunner.newGitRunner(project, args);
             }
-        return arcan;
+        return arcanRunner;
     }
 
-    public IProject getProject() throws IOException {
-        if (project == null) {
-            Type pType;
-            if (args.project.isCPP) {
-                pType = Type.CPP;
-            } else if (args.project.isC) {
-                pType = Type.C;
-            } else {
-                pType = Type.JAVA;
-            }
+    /**
+     * Static function to help with returning an IProject instance initialized
+     * with the given name and directories
+     *
+     * @param args
+     * @return
+     * @throws IOException
+     */
+    public static IProject buildProjectFromArgs(Args args) throws IOException {
+        AbstractProject.Type pType;
+        if (args.project.isCPP) {
+            pType = AbstractProject.Type.CPP;
+        } else if (args.project.isC) {
+            pType = AbstractProject.Type.C;
+        } else {
+            pType = AbstractProject.Type.JAVA;
+        }
 
-            if (args.isGitProject()) {
-                project = new GitProject(args.project.name, args.getGitRepo(), pType);
-                project.addSourceDirectory(args.getGitRepo().getAbsolutePath());
-            } else {
-                project = new Project(args.project.name, pType);
-            }
-
+        IProject project;
+        if (args.isGitProject()) {
+            project = new GitProject(args.project.name, args.getGitRepo(), pType);
+            project.addSourceDirectory(args.getGitRepo().getAbsolutePath());
+        } else {
+            project = new Project(args.project.name, pType);
         }
         return project;
     }
 
+    public IProject getProject() { return project; }
     public List<ToolRunner> getRunners() {
         return runners;
     }
+    public ASmellTracker getASmellTracker() { return aSmellTracker; }
 
     private boolean isGraphMLProject() throws IOException{
         try(var files = Files.walk(args.inputDirectory.toPath())){

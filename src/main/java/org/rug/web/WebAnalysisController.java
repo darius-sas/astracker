@@ -3,10 +3,12 @@ package org.rug.web;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,37 +42,22 @@ public class WebAnalysisController {
         ResultResponse result = new ResultResponse();
         try {
             long start = java.lang.System.nanoTime();
-            runner.run();
+            var analysisResult = runner.run();
             long end = java.lang.System.nanoTime();
             response.setStatus(HttpServletResponse.SC_OK);
-            result.setResult(Result.SUCCESS);
+            result.setResult(analysisResult);
             result.setProject(runner.getProjectName());
             result.setTimeElapsed(end - start);
             result.setMessage("No message.");
         } catch (Exception e) {
             logger.error("Internal server error: {}", e.getMessage());
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             result.setResult(Result.FAILED);
             result.setMessage(e.getMessage());
             result.setTimeElapsed(0);
         }
         return result;
-    }
-
-    /**
-     * Can be accessed to see what CLI arguments have been mapped by the request arguments.
-     *
-     * @param requestParameters
-     * @param response
-     * @return String
-     * @throws IOException
-     */
-    @RequestMapping(value = {"/getCLIargs"}, method = RequestMethod.GET,  produces={ "application/json"})
-    public String getCLIargs(
-            @RequestParam Map<String,String> requestParameters,
-            HttpServletResponse response){
-        var runner = new ASTrackerWebRunner(requestParameters);
-        return runner.getCLIArgs();
     }
 
     public final class ResultResponse{
@@ -129,7 +116,8 @@ public class WebAnalysisController {
     public enum Result{
         SUCCESS,
         FAILED,
-        CANCELLED
+        CANCELLED,
+        SKIPPED
     }
 
 }

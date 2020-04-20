@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import static org.rug.tracker.ASmellTracker.*;
 
@@ -50,45 +51,53 @@ public class ASmellTrackerStateManager {
         this.condensedGraph = Paths.get(dir.getAbsolutePath(), "condensed.graphml").toFile();
         this.trackGraph = Paths.get(dir.getAbsolutePath(), "track.graphml").toFile();
         this.trackerFile = Paths.get(dir.getAbsolutePath(), "tracker.seo").toFile();
+        createFilesIfNotExisting();
     }
 
     /**
      * Save the state of the given tracker on file.
      * @param tracker the object to serialize.
-     * @throws IOException if serialization fails.
      */
-    public void saveState(ASmellTracker tracker) throws IOException {
+    public void saveState(ASmellTracker tracker) {
         try(var outStream = new ObjectOutputStream(new FileOutputStream(trackerFile))) {
             outStream.writeObject(tracker);
             tracker.getTrackGraph().traversal().V().properties(ASmellTracker.SMELL_OBJECT).drop().iterate();
             tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
-            tracker.getTrackGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
+            tracker.getCondensedGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.writer, IO.graphml).write().iterate();
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("Saving the state of the ASmellTracker failed.");
         }
     }
 
     /**
      * Instantiate a new the tracker with a recovered state ready to analyse the next version of the given project.
      * @param project the project.
-     * @param lastVersion the last version in the project.
+     * @param lastVersionAnalysed the last version in the project that was analysed.
      * @return a new instance of AStracker that can analyse the remaining version in the given project.
      * @throws IOException if deserialization fails.
      * @throws ClassNotFoundException if deserialization fails.
      */
-    public ASmellTracker loadState(IProject project, IVersion lastVersion) throws IOException, ClassNotFoundException {
+    public ASmellTracker loadState(IProject project, IVersion lastVersionAnalysed) throws IOException, ClassNotFoundException {
         ASmellTracker tracker;
         try(var inpStream = new ObjectInputStream(new FileInputStream(trackerFile))) {
            tracker = (ASmellTracker) inpStream.readObject();
+           logger.debug("Tracker was loaded from file");
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Could not load the tracker from file.");
+            return null;
         }
+
         tracker.setCondensedGraph(TinkerGraph.open());
         tracker.getCondensedGraph().traversal().io(condensedGraph.getAbsolutePath()).with(IO.reader, IO.graphml).read().iterate();
-
         tracker.setTrackGraph(TinkerGraph.open());
         tracker.getTrackGraph().traversal().io(trackGraph.getAbsolutePath()).with(IO.reader, IO.graphml).read().iterate();
 
         tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
 
-        var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersion.getVersionString()).toSet();
-        var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersion);
+        var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersionAnalysed.getVersionString()).toSet();
+        var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersionAnalysed);
 
         assert lastVersionSmells.size() == lastVersionSmellVertices.size();
 
@@ -106,4 +115,18 @@ public class ASmellTrackerStateManager {
         return tracker;
     }
 
+    /**
+     * Helper class that will create the neccesary versioning files if they don't exist
+     * already in order to save the state of the analysis.
+     */
+    private void createFilesIfNotExisting() {
+        try {
+            if (!this.condensedGraph.exists()) this.condensedGraph.createNewFile();
+            if (!this.trackGraph.exists()) this.trackGraph.createNewFile();
+            if (!this.trackerFile.exists()) this.trackerFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("Could not create the versioning files for the ASmellTrackerStateManager");
+        }
+    }
 }
