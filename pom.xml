@@ -6,7 +6,7 @@
 
     <groupId>org.rug</groupId>
     <artifactId>astracker</artifactId>
-    <version>0.9.0</version>
+    <version>1.0.0</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -124,37 +124,6 @@
             </plugin>
 
             <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>2.0.0</version>
-                <configuration>
-                    <to>
-                        <image>astracker</image>
-                        <tags>
-                            <tag>latest</tag>
-                        </tags>
-                    </to>
-                    <container>
-                        <jvmFlags>
-                            <jvmFlag>-Xmx5G</jvmFlag>
-                        </jvmFlags>
-                        <mainClass>org.rug.WebMain</mainClass>
-                        <workingDirectory>/</workingDirectory>
-                    </container>
-                    <extraDirectories>
-                        <paths>
-                            <path>arcan</path>
-                            <path>/app/arcan</path>
-                        </paths>
-                        <paths>
-                            <path>src/main/jib</path>
-                            <path>/app</path>
-                        </paths>
-                    </extraDirectories>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
@@ -183,7 +152,21 @@
                     </descriptorRefs>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                    <mainClass>org.rug.WebMain</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

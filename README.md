@@ -23,14 +23,14 @@ mvn spring-boot:run
 ```
 and even built as a Docker image (ensure you have Docker installed) using:
 ```shell script
-sudo mvn compile jib:dockerBuild
+mvn clean compile package -DskipTest
+sudo docker build --tag astracker-web:1.0 .
 ```
 then run the Docker image using:
 ```shell script
-sudo docker run -p 8080:8080 -t astracker
+sudo docker run -itp 8080:8080 astracker-web:1.0
 ```
-**Note** that, in order for the image to be able to complete the requests you need to first [download](https://drive.google.com/file/d/1u8vYwAE9rrDosyoM33Nvg5YJuXRD_cA_/view?usp=sharing) Arcan1 and unzip the contents
-under `src/main/jib/arcan` and in the root folder (under a folder named `arcan`) of the project (**before building the image**).
+**Note** that, in order for the image to be able to complete the requests you need to first [download](https://drive.google.com/file/d/1u8vYwAE9rrDosyoM33Nvg5YJuXRD_cA_/view?usp=sharing) Arcan and unzip the contents under a directory called `arcan` in the same directory as the Dockerfile.
 
 # Usage
 ASTracker can be run as any standard executable `.jar` file:
