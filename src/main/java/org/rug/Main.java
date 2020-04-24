@@ -37,6 +37,7 @@ public class Main {
 
             if (args.verbose){
                 org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+                org.apache.log4j.Logger.getLogger("org.eclipse.jgit").setLevel(Level.OFF);
                 logger.info("Root logger level set to: {}", org.apache.log4j.Logger.getRootLogger().getLevel());
             }
 
