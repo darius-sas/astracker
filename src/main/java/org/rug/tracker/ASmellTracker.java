@@ -306,27 +306,6 @@ public class ASmellTracker implements Serializable{
         return this.getScorer().bestMatch().size();
     }
 
-    /**
-     * Closes the current trackgraph and returns the graph object. This operation removes the tail from the graph.
-     * The result is that this trackgraph is no more usable.
-     */
-    public Graph getFinalizedTrackGraph(){
-        GraphTraversalSource g = trackGraph.traversal();
-        g.V(tail).out().forEachRemaining( v -> g.addE(END).from(g.addV(END).property(VERSION, tail.value(LATEST_VERSION)).next()).to(v).next());
-        tail.remove();
-
-         g.V().has(SMELL_OBJECT).forEachRemaining(vertex -> {
-             ArchitecturalSmell as = vertex.value(SMELL_OBJECT);
-             vertex.property(SMELL_TYPE, as.getType().toString());
-             as.getCharacteristicsMap().forEach(vertex::property);
-             Set<String> affectedElements = as.getAffectedElements().stream()
-                     .map(v -> v.value(NAME).toString())
-                     .collect(Collectors.toCollection(TreeSet::new));
-             vertex.property("affectedElements", affectedElements.toString());
-         });
-        return trackGraph;
-    }
-
     public void setTrackGraph(Graph trackGraph) {
         this.trackGraph = trackGraph;
     }
