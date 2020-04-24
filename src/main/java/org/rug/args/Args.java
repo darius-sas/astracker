@@ -48,6 +48,9 @@ public class Args {
     @Parameter(names = {"--help", "-h", "-help", "-?"}, help = true)
     public boolean help;
 
+    @Parameter(names = {"--verbose", "-v"}, description = "Enables debug-level logging.")
+    public boolean verbose = false;
+
     @Parameter(names = {"-singleVersion", "-sv"}, description = "Running Arcan for the most recent version only.")
     public boolean singleVersion = false;
 

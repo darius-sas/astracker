@@ -1,13 +1,13 @@
 package org.rug;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.rug.args.Args;
 import org.rug.data.project.*;
 import org.rug.persistence.*;
 import org.rug.runners.*;
 import org.rug.tracker.ASmellTracker;
 import org.rug.tracker.SimpleNameJaccardSimilarityLinker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class Analysis {
 
-    private static final Logger logger = LoggerFactory.getLogger(Analysis.class.getName());
+    private static final Logger logger = LogManager.getLogger(Analysis.class);
 
     private final Args args;
     private IProject project;
@@ -39,12 +39,13 @@ public class Analysis {
         this.args = args;
         this.runners = new ArrayList<>();
         this.project = buildProjectFromArgs(args);
-//        this.project.addGraphMLfiles("./output-folder/arcanOutput/"+ args.project.name);
         this.aSmellTracker = new ASmellTracker(
                 new SimpleNameJaccardSimilarityLinker(),
                 args.trackNonConsecutiveVersions
         );
-        logger.info("Repo: " + args.getGitRepo().getAbsolutePath());
+        if (args.isGitProject()) {
+            logger.info("Repo: " + args.getGitRepo().getAbsolutePath());
+        }
         init();
     }
 

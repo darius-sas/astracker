@@ -1,6 +1,8 @@
 package org.rug;
 
 import com.beust.jcommander.JCommander;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 import org.rug.args.Args;
 import org.rug.persistence.PersistenceHub;
 import org.slf4j.Logger;
@@ -31,6 +33,11 @@ public class Main {
             if (args.help) {
                 jc.usage();
                 System.exit(0);
+            }
+
+            if (args.verbose){
+                org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+                logger.info("Root logger level set to: {}", org.apache.log4j.Logger.getRootLogger().getLevel());
             }
 
             Analysis analysis = new Analysis(args);
