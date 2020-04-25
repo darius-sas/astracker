@@ -96,6 +96,11 @@ public class ASmellTrackerStateManager {
 
         tracker.setTail(tracker.getTrackGraph().traversal().V().hasLabel(TAIL).next());
 
+        var uniqueSmellsMap = tracker.getUniqueSmellsMap();
+        tracker.getCondensedGraph().traversal().V()
+                .has(ASmellTracker.UNIQUE_SMELL_ID)
+                .forEachRemaining( v -> uniqueSmellsMap.put(v.value(ASmellTracker.UNIQUE_SMELL_ID), v));
+
         var lastVersionSmellVertices = tracker.getTrackGraph().traversal().V().hasLabel(TAIL).out().has(VERSION, lastVersionAnalysed.getVersionString()).toSet();
         var lastVersionSmells = project.getArchitecturalSmellsIn(lastVersionAnalysed);
 

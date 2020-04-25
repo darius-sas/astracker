@@ -2,7 +2,6 @@ package org.rug.tracker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -12,10 +11,7 @@ import org.rug.data.smells.ArchitecturalSmell;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
@@ -35,7 +31,6 @@ public class ASmellTracker implements Serializable{
     public static final String EVOLVED_FROM = "evolvedFrom";
     public static final String UNIQUE_SMELL_ID = "uniqueSmellID";
     public static final String REAPPEARED = "reappeared";
-    public static final String STARTED_IN = "startedIn";
     public static final String SIMILARITY = "similarity";
     public static final String CHARACTERISTIC = "characteristic";
     public static final String HAS_CHARACTERISTIC = "hasCharacteristic";
@@ -53,18 +48,19 @@ public class ASmellTracker implements Serializable{
     public static final String SMELL_ID = "smellId";
     public static final String COMPONENT_TYPE = "componentType";
     public static final String TAIL = "tail";
-    public static final String SMELL_STATUS = "status";
     public static final String COMPONENT_CHARACTERISTIC = "componentCharacteristic";
     public static final String LATEST_VERSION_INDEX = "latestVersionIndex";
 
     private transient Graph trackGraph;
     private transient Graph condensedGraph;
+    private final transient Map<Long, Vertex> uniqueSmellsMap = new HashMap<>(5000);
+    private final transient Map<String, CachedVertex> updatedAffectedElementsCache = new HashMap<>(5000);
     private transient Vertex tail;
     private long uniqueSmellID;
-    private ISimilarityLinker scorer;
-    private DecimalFormat decimal;
+    private final ISimilarityLinker scorer;
+    private final DecimalFormat decimal;
 
-    private boolean trackNonConsecutiveVersions;
+    private final boolean trackNonConsecutiveVersions;
 
     private final static Logger logger = LogManager.getLogger(ASmellTracker.class);
 
@@ -192,14 +188,6 @@ public class ASmellTracker implements Serializable{
     }
 
     /**
-     * Returns the latest version of update of this tracker.
-     * @return a string representing the version or {@link #NA} if no current version is available.
-     */
-    public String currentVersionIndex(){
-        return tail.property(LATEST_VERSION_INDEX).orElse(NA).toString();
-    }
-
-    /**
      * Updates the condensed graph from the current state of trackGraph.
      */
     private void updateCondensedGraph(){
@@ -211,18 +199,19 @@ public class ASmellTracker implements Serializable{
         logger.debug("Updating {} smells and affected components into the condensed graph.", smellsInVersion.size());
 
         for(var smellVertex : smellsInVersion){
-            var smellUID = smellVertex.value(UNIQUE_SMELL_ID);
+            Long smellUID = smellVertex.value(UNIQUE_SMELL_ID);
             var smellVersionString = smellVertex.value(VERSION);
             var smellVersionIndex = smellVertex.value(VERSION_INDEX);
             var smellVersionDate = smellVertex.value(VERSION_DATE);
-            var condensedSmell = gs.V()
-                    .has(UNIQUE_SMELL_ID, smellUID)
-                    .tryNext().orElseGet(() -> gs.addV(SMELL)
+            ArchitecturalSmell smellObject = smellVertex.value(SMELL_OBJECT);
+            String affectedComponentType = smellObject.getLevel().toString();
+
+            var condensedSmell = uniqueSmellsMap.computeIfAbsent(smellUID, (sUIDKey) -> gs.addV(SMELL)
                             .property(UNIQUE_SMELL_ID, smellUID)
                             .property(FIRST_APPEARED, smellVersionString)
                             .property(FIRST_APPEARED_INDEX, smellVersionIndex)
                             .property(FIRST_APPEARED_DATE, smellVersionDate).next());
-            ArchitecturalSmell smellObject = smellVertex.value(SMELL_OBJECT);
+
             if (!condensedSmell.property(SMELL_TYPE).isPresent()){
                 condensedSmell.property(SMELL_TYPE, smellObject.getType().toString());
             }
@@ -234,40 +223,43 @@ public class ASmellTracker implements Serializable{
                     .property(VERSION_INDEX, smellVersionIndex)
                     .property(VERSION_DATE, smellVersionDate)
                     .property(SMELL_ID, smellObject.getId()).next();
-
-            for(var affectedComp : smellObject.getAffectedElements()){
-                var name = affectedComp.value(NAME);
-                var component = gs.V()
-                        .has(NAME, name).tryNext()
-                        .orElseGet(() -> gs.addV(COMPONENT)
-                                .property(NAME, name)
-                                .property(COMPONENT_TYPE, smellObject.getLevel().toString()).next());
-                gs.addE(AFFECTS).from(condensedSmell).to(component)
+            
+            for(var affectedComp : smellObject.getAffectedElements()) {
+                String name = affectedComp.value(NAME);
+                var component = updatedAffectedElementsCache.computeIfAbsent(name, (key) -> new CachedVertex(gs.addV(COMPONENT)
+                        .property(NAME, name)
+                        .property(COMPONENT_TYPE, affectedComponentType).next()));
+                if (!component.updated){
+                    var cce = gs.V(component.vertex).outE(HAS_CHARACTERISTIC)
+                            .has(VERSION, smellVersionString.toString())
+                            .tryNext();
+                    if (cce.isEmpty()) {
+                        var componentCharacteristic = gs.addV(COMPONENT_CHARACTERISTIC).next();
+                        affectedComp.keys().stream().filter(k -> !k.equals(NAME)).forEach(k ->
+                                componentCharacteristic.property(k, affectedComp.value(k))
+                        );
+                        gs.addE(HAS_CHARACTERISTIC).from(component.vertex).to(componentCharacteristic)
+                                .property(VERSION, smellVersionString)
+                                .property(VERSION_INDEX, smellVersionIndex)
+                                .property(VERSION_DATE, smellVersionDate)
+                                .next();
+                    }
+                    component.updated = true;
+                }
+                gs.addE(AFFECTS).from(condensedSmell).to(component.vertex)
                         .property(VERSION, smellVersionString)
                         .property(VERSION_INDEX, smellVersionIndex)
                         .property(VERSION_DATE, smellVersionDate)
                         .next();
-                var cce = gs.V(component).outE(HAS_CHARACTERISTIC)
-                        .has(VERSION, smellVersionString.toString())
-                        .tryNext();
-                if (cce.isEmpty()){
-                    final var componentCharacteristics = gs.addV(COMPONENT_CHARACTERISTIC).next();
-                    affectedComp.keys().stream().filter(k -> !k.equals(NAME)).forEach(k->
-                            componentCharacteristics.property(k, affectedComp.value(k))
-                    );
-                    gs.addE(HAS_CHARACTERISTIC).from(component).to(componentCharacteristics)
-                            .property(VERSION, smellVersionString)
-                            .property(VERSION_INDEX, smellVersionIndex)
-                            .property(VERSION_DATE, smellVersionDate)
-                            .next();
-                }
             }
+
             long age = condensedSmell.<Long>property(AGE).orElse(0L);
             condensedSmell.property(AGE, ++age);
             condensedSmell.property(LAST_DETECTED, smellVersionString);
             condensedSmell.property(LAST_DETECTED_INDEX, smellVersionIndex);
             condensedSmell.property(LAST_DETECTED_DATE, smellVersionDate);
         }
+        updatedAffectedElementsCache.clear(); // reset cache for next version
     }
 
     /**
@@ -305,5 +297,37 @@ public class ASmellTracker implements Serializable{
 
     public void setTail(Vertex tail) {
         this.tail = tail;
+    }
+
+    /**
+     * Return the map that contains all the unique smell objects from the condensed graph.
+     * @return a map where the keys are the UNIQUE_SMELL_ID and the values are the smell vertices with the
+     * corresponding UNIQUE_SMELL_ID.
+     */
+    public Map<Long, Vertex> getUniqueSmellsMap() {
+        return uniqueSmellsMap;
+    }
+
+    /**
+     * Encapsulates a vertex to quickly check whether it was updated or not.
+     */
+    private static class CachedVertex {
+        boolean updated;
+        Vertex vertex;
+
+        public CachedVertex(Vertex vertex) {
+            this.vertex = vertex;
+            updated = false;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this.vertex.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return vertex.hashCode();
+        }
     }
 }
