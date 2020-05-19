@@ -26,5 +26,9 @@ COPY ${ARCAN_CPP_FILE} ${ARCAN_CPP_FILE}
 RUN mkdir -p ${STATES_DIR}
 RUN mkdir -p ${CLONED_REPOS_DIR}
 RUN mkdir -p ${OUTPUT_DIR}
+RUN mkdir -p ${OUTPUT_DIR}/trackASOutput/
+
+COPY ${CLONED_REPOS_DIR} ${CLONED_REPOS_DIR}
+COPY ${OUTPUT_DIR}/trackASOutput ${OUTPUT_DIR}/trackASOutput/
 
 ENTRYPOINT ["java","-jar","astracker.jar"]

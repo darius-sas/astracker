@@ -1,5 +1,7 @@
 package org.rug.data.project;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -9,6 +11,8 @@ import org.rug.data.characteristics.comps.SourceCodeRetriever;
 import java.nio.file.Path;
 
 public class GitVersion extends AbstractVersion {
+
+    private transient final static Logger logger = LogManager.getLogger(GitVersion.class);
 
     private transient Repository repository;
     private transient CheckoutCommand checkoutCommand;
@@ -31,7 +35,8 @@ public class GitVersion extends AbstractVersion {
                     checkoutCommand.call();
                     isCheckedOut = true;
                 } catch (GitAPIException e) {
-                    throw new IllegalArgumentException("Could not checkout the given commit: " + commitName);
+                    logger.error("Could not checkout commit {} due a JGit unrecoverable exception: {}", commitName, e.getMessage());
+                    throw new IllegalArgumentException("Could not checkout the given commit: " + commitName, e);
                 }
         }
         return super.getSourceCodeRetriever();
