@@ -31,10 +31,12 @@ public class GitVersion extends AbstractVersion {
     public synchronized SourceCodeRetriever getSourceCodeRetriever() {
         if (!isCheckedOut) {
                 checkoutCommand.setName(commitName);
+                checkoutCommand.setForced(true);
                 try {
                     checkoutCommand.call();
                     isCheckedOut = true;
                 } catch (GitAPIException e) {
+                    isCheckedOut = false;
                     logger.error("Could not checkout commit {} due a JGit unrecoverable exception: {}", commitName, e.getMessage());
                     throw new IllegalArgumentException("Could not checkout the given commit: " + commitName, e);
                 }
