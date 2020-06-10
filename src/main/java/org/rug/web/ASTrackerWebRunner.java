@@ -26,7 +26,7 @@ public class ASTrackerWebRunner {
 
     private ArgumentMapper mapper;
     private static final Path arcanJavaJar = Paths.get("arcan/Arcan-1.4.0-SNAPSHOT/Arcan-1.4.0-SNAPSHOT.jar");
-    private static final Path arcanCppJar  = Paths.get("arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar");
+    private static final Path arcanCppJar  = Paths.get("arcan/Arcan-c-1.3.1-SNAPSHOT-jar-with-dependencies.jar");
     private static final Path outputDirectory = Paths.get("./output-folder");
     private static final Path statesDirectory = Paths.get("./states");
     private static final Path clonedReposDirectory = Paths.get("./cloned-projects");
