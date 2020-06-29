@@ -53,8 +53,8 @@ public class ASmellTracker implements Serializable{
 
     private transient Graph trackGraph;
     private transient Graph condensedGraph;
-    private final transient Map<Long, Vertex> uniqueSmellsMap = new HashMap<>(5000);
-    private final transient Map<String, CachedVertex> updatedAffectedElementsCache = new HashMap<>(5000);
+    private transient Map<Long, Vertex> uniqueSmellsMap;
+    private transient Map<String, CachedVertex> updatedAffectedElementsCache;
     private transient Vertex tail;
     private long uniqueSmellID;
     private final ISimilarityLinker scorer;
@@ -77,6 +77,7 @@ public class ASmellTracker implements Serializable{
         this.trackNonConsecutiveVersions = trackNonConsecutiveVersions;
         this.scorer = scorer;
         this.decimal = new DecimalFormat("0.0#");
+        this.initializeCache();
     }
 
 
@@ -306,6 +307,11 @@ public class ASmellTracker implements Serializable{
      */
     public Map<Long, Vertex> getUniqueSmellsMap() {
         return uniqueSmellsMap;
+    }
+
+    public void initializeCache() {
+        this.uniqueSmellsMap = new HashMap<>(5000);
+        this.updatedAffectedElementsCache = new HashMap<>(5000);
     }
 
     /**

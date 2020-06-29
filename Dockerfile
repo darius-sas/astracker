@@ -12,7 +12,7 @@ WORKDIR  astracker-wd
 
 ARG JAR_FILE=target/astracker-1.0.0.jar
 ARG ARCAN_JAVA_DIR=arcan/Arcan-1.4.0-SNAPSHOT
-ARG ARCAN_CPP_FILE=arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar
+ARG ARCAN_CPP_FILE=arcan/Arcan-c-1.3.1-SNAPSHOT-jar-with-dependencies.jar
 
 ARG STATES_DIR=states
 ARG CLONED_REPOS_DIR=cloned-projects

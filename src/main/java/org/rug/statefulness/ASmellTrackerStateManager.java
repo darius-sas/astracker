@@ -82,6 +82,7 @@ public class ASmellTrackerStateManager {
         ASmellTracker tracker;
         try(var inpStream = new ObjectInputStream(new FileInputStream(trackerFile))) {
            tracker = (ASmellTracker) inpStream.readObject();
+           tracker.initializeCache();
            logger.debug("Tracker was loaded from file");
         } catch (Exception e) {
             e.printStackTrace();

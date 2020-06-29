@@ -23,7 +23,7 @@ mvn spring-boot:run
 ```
 and even built as a Docker image (ensure you have Docker installed) using:
 ```shell script
-mvn clean compile package -DskipTest
+mvn clean compile package -DskipTests
 sudo docker build --tag astracker-web:1.0 .
 ```
 then run the Docker image using:
