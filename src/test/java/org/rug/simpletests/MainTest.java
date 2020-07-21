@@ -1,6 +1,7 @@
 package org.rug.simpletests;
 
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.rug.Main;
 import org.rug.persistence.PersistenceHub;
 
@@ -50,8 +51,9 @@ class MainTest {
     }
 
 
+    @Test
     void systemTestAnt(){
-        executeMainProject("ant", false);
+        executeMainProject("pyne", false);
     }
 
 
