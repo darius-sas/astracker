@@ -33,8 +33,8 @@ public class SimilarityLinkerComparison {
         var normalGenerator = new SmellSimilarityDataGenerator(outputDir + "test-normal-link-scores.csv");
         var simpleNameGenerator = new SmellSimilarityDataGenerator(outputDir + "test-simple-link-scores.csv");
 
-        var normalTracker = new ASmellTracker(normalLinker, false);
-        var simpleNameTracker = new ASmellTracker(simpleNamesLinker, false);
+        var normalTracker = new ASmellTracker(normalLinker, 0);
+        var simpleNameTracker = new ASmellTracker(simpleNamesLinker, 0);
 
         project.forEach(version ->{
             var smells = project.getArchitecturalSmellsIn(version);

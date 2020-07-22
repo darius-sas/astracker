@@ -50,6 +50,7 @@ public class ASmellTracker implements Serializable{
     public static final String TAIL = "tail";
     public static final String COMPONENT_CHARACTERISTIC = "componentCharacteristic";
     public static final String LATEST_VERSION_INDEX = "latestVersionIndex";
+    private static final String NON_CONSEC_VERSIONS = "nonConsecVersions";
 
     private transient Graph trackGraph;
     private transient Graph condensedGraph;
@@ -61,22 +62,24 @@ public class ASmellTracker implements Serializable{
     private final DecimalFormat decimal;
 
     private final boolean trackNonConsecutiveVersions;
+    private final int maxNonConsecutiveVersions;
 
     private final static Logger logger = LogManager.getLogger(ASmellTracker.class);
 
     /**
      * Builds an instance of this tracker.
-     * @param trackNonConsecutiveVersions whether to track a smell through non-consecutive versions.
-     *                                    This adds the possibility to track reappearing smells.
+     * @param maxNonConsecutiveVersions how many versions to wait before closing a smell dynasty.
+     *
      */
-    public ASmellTracker(ISimilarityLinker scorer, boolean trackNonConsecutiveVersions){
+    public ASmellTracker(ISimilarityLinker scorer, int maxNonConsecutiveVersions){
         this.trackGraph = TinkerGraph.open();
         this.tail = trackGraph.traversal().addV(TAIL).next();
         this.condensedGraph = TinkerGraph.open();
         this.uniqueSmellID = 1L;
-        this.trackNonConsecutiveVersions = trackNonConsecutiveVersions;
         this.scorer = scorer;
         this.decimal = new DecimalFormat("0.0#");
+        this.trackNonConsecutiveVersions = maxNonConsecutiveVersions > 0;
+        this.maxNonConsecutiveVersions = maxNonConsecutiveVersions;
         this.initializeCache();
     }
 
@@ -86,7 +89,7 @@ public class ASmellTracker implements Serializable{
      * A JaccardSimilarityLinker is used to select the single successor of the given smell.
      */
     public ASmellTracker(){
-        this(new JaccardSimilarityLinker(), false);
+        this(new JaccardSimilarityLinker(), 0);
     }
 
     /**
@@ -121,6 +124,7 @@ public class ASmellTracker implements Serializable{
                         .property(SMELL_ID, t.getB().getId())
                         .property(SMELL_OBJECT, t.getB())
                         .property(UNIQUE_SMELL_ID, predecessor.value(UNIQUE_SMELL_ID))
+                        .property(NON_CONSEC_VERSIONS, 0)
                         .next();
                 g1.V(tail).outE().where(otherV().is(predecessor)).drop().iterate();
                 String eLabel = tail.value(LATEST_VERSION).equals(predecessor.value(VERSION)) ? EVOLVED_FROM : REAPPEARED;
@@ -157,6 +161,7 @@ public class ASmellTracker implements Serializable{
                 .property(SMELL_ID, s.getId())
                 .property(SMELL_OBJECT, s)
                 .property(UNIQUE_SMELL_ID, uniqueSmellID++)
+                .property(NON_CONSEC_VERSIONS, 0)
                 .next();
         g.addE(LATEST_VERSION).from(tail).to(successor).next();
     }
@@ -165,11 +170,16 @@ public class ASmellTracker implements Serializable{
      * Concludes the dynasty of the given smell (last smell in the dynasty)
      * @param smell the smell
      */
-    private void endDynasty(ArchitecturalSmell smell){
+    private void endDynasty(ArchitecturalSmell smell) {
         GraphTraversalSource g = trackGraph.traversal();
         Vertex lastHeir = g.V().has(SMELL_OBJECT, smell).next();
-        g.V(tail).outE().where(otherV().is(lastHeir)).drop().iterate();
-        g.V(lastHeir).drop().iterate();
+        int nonConsecVersions = lastHeir.<Integer>value(NON_CONSEC_VERSIONS) + 1;
+        if (nonConsecVersions > maxNonConsecutiveVersions){
+            g.V(tail).outE().where(otherV().is(lastHeir)).drop().iterate();
+            g.V(lastHeir).drop().iterate();
+        } else {
+            lastHeir.property(NON_CONSEC_VERSIONS, nonConsecVersions);
+        }
     }
 
     /**

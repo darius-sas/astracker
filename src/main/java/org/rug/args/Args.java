@@ -42,8 +42,8 @@ public class Args {
     @Parameter(names = {"-pCompoCharact", "-pCC"}, description = "Print the component characteristics/metrics for every analyzed version.")
     public boolean componentCharacteristics;
 
-    @Parameter(names = {"-enableNonConsec", "-eNC"}, description = "Whether to track smells across non consecutive versions. This allows to track re-appeared smells, denoted by a special edge in the output track graph.")
-    public boolean trackNonConsecutiveVersions = false;
+    @Parameter(names = {"-trackNonConsecSmells", "-tNCS"}, description = "If set greater than 0, this allows to link similar smells appearing in non-consecutive versions. This argument indicates the maximum number of versions to skip.")
+    public int trackNonConsecutiveVersions = 0;
 
     @Parameter(names = {"--help", "-h", "-help", "-?"}, help = true)
     public boolean help;
@@ -97,7 +97,7 @@ public class Args {
     }
 
     private String getOutputFileName(String name, String format){
-        String fileName = String.format("%s-%s.%s", name, (!trackNonConsecutiveVersions ? "consecOnly" : "nonConsec"), format);
+        String fileName = String.format("%s-%s.%s", name, ( trackNonConsecutiveVersions > 0 ? "consecOnly" : "nonConsec"), format);
         return Paths.get(getTrackASOutDir(), fileName).toString();
     }
 

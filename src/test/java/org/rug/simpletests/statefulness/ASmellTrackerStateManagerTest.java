@@ -51,7 +51,7 @@ public class ASmellTrackerStateManagerTest {
 
     @Test
     void testStatefulness() throws IOException, ClassNotFoundException {
-        var tracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), false);
+        var tracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), 0);
 
         var v1 = antlr.getVersionWith(1);
         var v2 = antlr.getVersionWith(2);
@@ -83,7 +83,7 @@ public class ASmellTrackerStateManagerTest {
     }
 
     void testStatefulness(IProject project, Map<String, Long> oracle) throws IOException, ClassNotFoundException {
-        var tracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), false);
+        var tracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), 0);
         int nVersions = (int)project.numberOfVersions();
 
         IntStream.range(1, nVersions/2).forEach(i -> {

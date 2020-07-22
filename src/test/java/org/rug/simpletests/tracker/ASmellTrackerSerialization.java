@@ -40,7 +40,7 @@ public class ASmellTrackerSerialization{
 
     @Test
     void testSerialization() throws IOException, ClassNotFoundException {
-        ASmellTracker smellTracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), false);
+        ASmellTracker smellTracker = new ASmellTracker(new SimpleNameJaccardSimilarityLinker(), 0);
         var v1 = antlr.getVersion("3.1");
         var v2 = antlr.getVersion("3.2");
         var v3 = antlr.getVersion("3.3");
