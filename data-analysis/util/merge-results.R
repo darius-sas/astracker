@@ -4,7 +4,7 @@ library(dplyr)
 args <- commandArgs(TRUE)
 
 if (length(args) < 2) {
-  write("Usage: Rscript merge-results.r <projects-dir> <output-dir> [--nonConsec]", stdout())
+  write("Usage: Rscript merge-results.r <projects-dir> <output-dir> [--nonConsec] [--components] [--smells] [--affected] [--sizes]", stdout())
   quit()
 }
 
@@ -26,12 +26,33 @@ merge.results <- function(dir, pattern){
 }
 
 consecOnly = TRUE
-if (length(args) == 3 & !is.null(args[3])) {
+components = FALSE
+smells = FALSE
+affected = FALSE
+sizes = FALSE
+if ("--nonConsec" %in% args) {
   consecOnly = FALSE
+}
+
+if ("--components" %in% args) {
+  components = TRUE
+}
+
+if ("--smells" %in% args) {
+  smells = TRUE
+}
+
+if ("--affected" %in% args) {
+  affected = TRUE
+}
+
+if ("--sizes" %in% args) {
+  sizes = TRUE
 }
 
 results.dir <- args[1]
 output.dir <- args[2]
+
 pattern <- ifelse(consecOnly,"-consecOnly.csv", "-nonConsec.csv")
 
 # Create paths to output files
@@ -41,17 +62,29 @@ cc.dataset = file.path(output.dir, "components.csv")
 af.dataset = file.path(output.dir, "affected.csv")
 
 # Invoke merging and do postprocessing
-df <- merge.results(results.dir, paste("*smell-characteristics", pattern, sep=""))
-df.projects <- merge.results(results.dir, paste("*project-sizes", pattern, sep=""))
-df <- left_join(df, df.projects, by = c("project", "version"))
-df <- df %>% mutate(pageRankWeighted = ifelse(affectedComponentType=="package", 
-                                              pageRankMax * nPackages, 
-                                              pageRankMax * nClasses))
-df.components <- merge.results(results.dir, paste("*components-characteristics", pattern, sep = ""))
-df.affected <- merge.results(results.dir, paste("*affected-components", pattern, sep = ""))
+if(smells){
+  df <- merge.results(results.dir, paste("*smell-characteristics", pattern, sep=""))
+  df.projects <- merge.results(results.dir, paste("*project-sizes", pattern, sep=""))
+  df <- left_join(df, df.projects, by = c("project", "version"))
+  df <- df %>% mutate(pageRankWeighted = ifelse(affectedComponentType=="package", 
+                                                pageRankMax * nPackages, 
+                                                pageRankMax * nClasses))
+  write.csv(df, file = sc.dataset, row.names = F)
+  write.csv(df.projects, file = ps.dataset, row.names = F)
+}
+if(sizes){
+  df.projects <- merge.results(results.dir, paste("*project-sizes", pattern, sep=""))
+  write.csv(df.projects, file = ps.dataset, row.names = F)
+}
+if(components){
+  df.components <- merge.results(results.dir, paste("*component-characteristics", pattern, sep = ""))
+  write.csv(df.components, file = cc.dataset, row.names = F)
+}
+if(affected){
+  df.affected <- merge.results(results.dir, paste("*affected-components", pattern, sep = ""))
+  write.csv(df.affected, file = af.dataset, row.names = F)
+}
 
-# Write the datasets to file
-write.csv(df, file = sc.dataset, row.names = F)
-write.csv(df.projects, file = ps.dataset, row.names = F)
-write.csv(df.components, file = cc.dataset, row.names = F)
-write.csv(df.affected, file = af.dataset, row.names = F)
+
+
+
