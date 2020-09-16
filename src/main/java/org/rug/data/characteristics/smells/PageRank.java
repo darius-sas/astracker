@@ -161,16 +161,17 @@ public class PageRank extends AbstractSmellCharacteristic {
                     .build().property("centrality")
                     .edges(__.outE(EdgeLabel.PACKAGEISAFFERENTOF.toString()).asAdmin()).create(explodedGraph);
 
+            int maxWorkers = Runtime.getRuntime().availableProcessors();
             try {
                 Future<ComputerResult> futureClasses = explodedGraph
-                        .compute().workers(4) // max workers is 4
+                        .compute().workers(maxWorkers) // max workers is 4
                         .program(programClasses)
                         .submit();
                 Graph g = futureClasses.get().graph();
                 innerMap.put(AffectedDesign.Level.DESIGN, g);
 
                 Future<ComputerResult> futurePackage = explodedGraph
-                        .compute().workers(4)
+                        .compute().workers(maxWorkers)
                         .program(programPackage)
                         .submit();
                 g = futurePackage.get().graph();
