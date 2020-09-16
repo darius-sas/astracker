@@ -32,6 +32,15 @@ sudo docker run -itp 8080:8080 astracker-web:1.0
 ```
 **Note** that, in order for the image to be able to complete the requests you need to first [download](https://drive.google.com/file/d/1u8vYwAE9rrDosyoM33Nvg5YJuXRD_cA_/view?usp=sharing) Arcan and unzip the contents under a directory called `arcan` in the same directory as the Dockerfile.
 
+## Deploying Docker container 
+If you have access privileges to `webhosting.rug.nl`, then run:
+```shell script
+ $ ns=astracker; tag=1.0; img=astracker-web
+ $ docker login registry.webhosting.rug.nl
+ $ docker tag ${img} registry.webhosting.rug.nl/${ns}/${img}:${tag}
+ $ docker push registry.webhosting.rug.nl/${ns}/${img}:${tag}
+```
+
 # Usage
 ASTracker can be run as any standard executable `.jar` file:
 ```bash
