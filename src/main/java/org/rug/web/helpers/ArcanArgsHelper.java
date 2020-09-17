@@ -34,7 +34,7 @@ public class ArcanArgsHelper {
         if (args.shouldAnalyseSingleVersion()) {
             return getSingleVersionArguments(args);
         }
-        return String.format("-git -p %s -out %s -branch %s -startDate %s -nWeeks %d",
+        return String.format("-git -p %s -out %s -branch %s -startDate %s -nDays %d",
                 args.getGitRepo().getAbsolutePath(),
                 args.getArcanOutDir(),
                 "master",
@@ -56,8 +56,7 @@ public class ArcanArgsHelper {
                 getCommitHashFromPath(path).getName()
         );
 
-        return String.format("%s -versionId %s -p %s -out %s -branch %s",
-                args.isJavaProject() ? "-singleVersion" : "" , //flag needed for Java projects
+        return String.format("-versionId %s -p %s -out %s -branch %s",
                 versionId,
                 args.getGitRepo().getAbsolutePath(),
                 args.getArcanOutDir(),

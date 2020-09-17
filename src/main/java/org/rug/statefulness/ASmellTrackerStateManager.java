@@ -86,8 +86,8 @@ public class ASmellTrackerStateManager {
            logger.debug("Tracker was loaded from file");
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("Could not load the tracker from file.");
-            return null;
+            logger.error("Could not load the tracker from file. Using new tracker instead.");
+            return new ASmellTracker();
         }
 
         tracker.setCondensedGraph(TinkerGraph.open());

@@ -87,12 +87,18 @@ public class RemoteProjectFetcher {
      */
     public String getProjectName(String linkOrName){
         var slashIndex = linkOrName.lastIndexOf("/");
-        var dotIndex = linkOrName.lastIndexOf(".");
-        return slashIndex == -1 || dotIndex == -1 ? linkOrName : linkOrName.substring(slashIndex +1, dotIndex);
+        if (linkOrName.endsWith("/")) {
+            linkOrName = linkOrName.substring(0, slashIndex);
+            slashIndex = linkOrName.lastIndexOf("/");
+        }
+        if (linkOrName.endsWith(".git")){
+            linkOrName = linkOrName.substring(0, linkOrName.lastIndexOf("."));
+        }
+        return slashIndex == -1 ? linkOrName : linkOrName.substring(slashIndex + 1);
     }
 
     public boolean isValidGitLink(String link) {
-        return link.matches("^http(s)?:.*\\.git$");
+        return link.matches("^http(s)?:.*");
     }
 
 }

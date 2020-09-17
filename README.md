@@ -35,10 +35,10 @@ sudo docker run -itp 8080:8080 astracker-web:1.0
 ## Deploying Docker container 
 If you have access privileges to `webhosting.rug.nl`, then run:
 ```shell script
- $ ns=astracker; tag=1.0; img=astracker-web
- $ docker login registry.webhosting.rug.nl
- $ docker tag ${img} registry.webhosting.rug.nl/${ns}/${img}:${tag}
- $ docker push registry.webhosting.rug.nl/${ns}/${img}:${tag}
+ns=astracker; tag=latest; img=astracker-web
+docker login registry.webhosting.rug.nl
+docker tag ${img} registry.webhosting.rug.nl/${ns}/${img}:${tag}
+docker push registry.webhosting.rug.nl/${ns}/${img}:${tag}
 ```
 
 # Usage

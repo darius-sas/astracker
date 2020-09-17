@@ -14,7 +14,7 @@ public class GitArcanJavaRunner extends AbstractGitArcanRunner {
 
     public static GitArcanJavaRunner newGitRunner(IProject project, Args args){
         logger.debug("This is a Git Java project! Adding Arcan Java Runner to the list of runners");
-        var arcanCommand = "java -Xmx5G -jar " + args.getArcanJarFile();
+        var arcanCommand = "java -jar " + args.getArcanJarFile();
         GitArcanJavaRunner arcan = new GitArcanJavaRunner("arcan", project, args, arcanCommand);
         arcan.setArgs(ArcanArgsHelper.getArguments(args).split(" "));
         arcan.inheritOutput(args.showArcanOutput);
