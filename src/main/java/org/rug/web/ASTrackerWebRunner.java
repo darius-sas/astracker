@@ -27,11 +27,11 @@ public class ASTrackerWebRunner {
     private ArgumentMapper mapper;
     private static final Path arcanJavaJar = Paths.get("arcan/Arcan-1.4.0-SNAPSHOT/Arcan-1.4.0-SNAPSHOT.jar");
     private static final Path arcanCppJar  = Paths.get("arcan/Arcan-c-1.3.1-SNAPSHOT-jar-with-dependencies.jar");
-    private static final Path outputDirectory = Paths.get("./output-folder");
-    private static final Path statesDirectory = Paths.get("./states");
-    private static final Path clonedReposDirectory = Paths.get("./cloned-projects");
-    private Path arcanOutput;
-    private Path trackASoutput;
+    public static final Path outputDirectory = Paths.get("./output-folder");
+    public static final Path statesDirectory = Paths.get("./states");
+    public static final Path clonedReposDirectory = Paths.get("./cloned-projects");
+    public static Path arcanOutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput");
+    public static Path trackASoutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput");;
 
     public ASTrackerWebRunner(Map<String, String> requestParameter) {
         try {
@@ -39,13 +39,12 @@ public class ASTrackerWebRunner {
                 Files.createDirectory(outputDirectory);
                 logger.info("Created directory {}", outputDirectory.toAbsolutePath().toString());
             }
-            trackASoutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput");
+
             if (Files.notExists(trackASoutput)) {
                 Files.createDirectory(trackASoutput);
                 logger.info("Created directory {}", trackASoutput.toAbsolutePath().toString());
             }
 
-            arcanOutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput");
             if (Files.notExists(arcanOutput)) {
                 Files.createDirectory(arcanOutput);
                 logger.info("Created directory {}", arcanOutput.toAbsolutePath().toString());

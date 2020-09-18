@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +36,7 @@ public class SystemController {
 
     @RequestMapping(value = "/projects", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public JSONWrappedObject projects(){
-        Path projectsDir = Paths.get("./output-folder/trackASOutput/");
+        Path projectsDir = ASTrackerWebRunner.trackASoutput;
         try {
 
             var list = Files.list(projectsDir)
@@ -140,6 +141,32 @@ public class SystemController {
                 .orElseGet(() -> wrapToJson("system", System.empty()));
     }
 
+    @RequestMapping(value = "/remove", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public JSONWrappedObject remove(@RequestParam(value="system") String system){
+        if (!(system.contains("/") || system.contains("\\"))) {
+            Path sysPathArcan = Paths.get(ASTrackerWebRunner.arcanOutput.toAbsolutePath().toString(), system);
+            Path sysPathAstrc = Paths.get(ASTrackerWebRunner.trackASoutput.toAbsolutePath().toString(), system);
+            Path sysPathState = Paths.get(ASTrackerWebRunner.statesDirectory.toAbsolutePath().toString(), system);
+            try {
+                FileSystemUtils.deleteRecursively(sysPathArcan);
+            } catch (IOException e) {
+                logger.warn("Error while removing arcan output dir for {}", system);
+            }
+            try {
+                FileSystemUtils.deleteRecursively(sysPathAstrc);
+            } catch (IOException e) {
+                logger.warn("Error while removing trackAS output dir for {}", system);
+            }
+            try {
+                FileSystemUtils.deleteRecursively(sysPathState);
+            } catch (IOException e) {
+                logger.warn("Error while removing state dir for {}", system);
+            }
+            cachedSystems.remove(system);
+            logger.info("Removed system {}", system);
+        }
+        return projects();
+    }
 
     /**
      * Get the system object with the given name. In case the system has not been cached already, load it before returning it to the caller.
@@ -151,7 +178,7 @@ public class SystemController {
             cachedSystems.remove(cachedSystems.keySet().iterator().next());
         }
         if (!cachedSystems.containsKey(systemName)){
-            var graphFile = Paths.get(String.format("./output-folder/trackASOutput/%s/condensed-graph-consecOnly.graphml", systemName));
+            var graphFile = Paths.get(String.format("%s/%s/condensed-graph-nonConsec.graphml", ASTrackerWebRunner.trackASoutput.toAbsolutePath(), systemName));
 
             if (!Files.exists(graphFile)){
                 return Optional.empty();
