@@ -24,11 +24,11 @@ mvn spring-boot:run
 and even built as a Docker image (ensure you have Docker installed) using:
 ```shell script
 mvn clean compile package -DskipTests
-sudo docker build --tag astracker-web:1.0 .
+sudo docker build --tag astracker-web:latest .
 ```
 then run the Docker image using:
 ```shell script
-sudo docker run -itp 8080:8080 astracker-web:1.0
+sudo docker run -itp 8080:8080 astracker-web:latest
 ```
 **Note** that, in order for the image to be able to complete the requests you need to first [download](https://drive.google.com/file/d/1u8vYwAE9rrDosyoM33Nvg5YJuXRD_cA_/view?usp=sharing) Arcan and unzip the contents under a directory called `arcan` in the same directory as the Dockerfile.
 
