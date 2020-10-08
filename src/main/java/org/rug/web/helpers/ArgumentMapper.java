@@ -148,6 +148,17 @@ public class ArgumentMapper {
                         array.add("-doNotRunTracker");
                     }
                     break;
+
+                case "branch":
+                    array.add("-branch");
+                    array.add(requestParameters.get(key));
+                    break;
+
+                case "startDate":
+                    array.add("-startDate");
+                    array.add(requestParameters.get(key));
+                    break;
+
             }
         }
         return array;

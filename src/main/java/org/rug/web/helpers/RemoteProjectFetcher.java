@@ -45,7 +45,7 @@ public class RemoteProjectFetcher {
                 } else {
                     // The project has been cloned before, update the branch to the latest version.
                     var git = Git.open(path.toFile());
-                    var result = git.pull().setRemote("origin").setRemoteBranchName("master").call();
+                    var result = git.pull().setRemote("origin").call();
                     if (!result.isSuccessful()) {
                         logger.warn(String.format(
                                 "Was not able to pull the latest changes from the repository %s",

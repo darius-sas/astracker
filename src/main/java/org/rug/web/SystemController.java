@@ -147,6 +147,8 @@ public class SystemController {
             Path sysPathArcan = Paths.get(ASTrackerWebRunner.arcanOutput.toAbsolutePath().toString(), system);
             Path sysPathAstrc = Paths.get(ASTrackerWebRunner.trackASoutput.toAbsolutePath().toString(), system);
             Path sysPathState = Paths.get(ASTrackerWebRunner.statesDirectory.toAbsolutePath().toString(), system);
+            Path clonedPaths  = Paths.get(ASTrackerWebRunner.clonedReposDirectory.toAbsolutePath().toString(), system);
+
             try {
                 FileSystemUtils.deleteRecursively(sysPathArcan);
             } catch (IOException e) {
@@ -161,6 +163,11 @@ public class SystemController {
                 FileSystemUtils.deleteRecursively(sysPathState);
             } catch (IOException e) {
                 logger.warn("Error while removing state dir for {}", system);
+            }
+            try {
+                FileSystemUtils.deleteRecursively(clonedPaths);
+            } catch (IOException e) {
+                logger.warn("Error while removing cloned dir for {}", system);
             }
             cachedSystems.remove(system);
             logger.info("Removed system {}", system);

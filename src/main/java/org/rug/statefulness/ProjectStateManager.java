@@ -7,6 +7,7 @@ import org.rug.data.project.IVersion;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 /**
  * This class serializes the state of a project as a file in a given directory.
@@ -63,7 +64,10 @@ public class ProjectStateManager {
      * @throws IOException if the serialization fails
      */
     public void saveState(IProject project) throws IOException {
-        saveState(project.versions().last());
+        Optional<IVersion> firstVersion = project.versions().stream().findFirst();
+        if (firstVersion.isPresent()) {
+            saveState(firstVersion.get());
+        }
     }
 
     /**

@@ -37,9 +37,9 @@ public class ArcanArgsHelper {
         return String.format("-git -p %s -out %s -branch %s -startDate %s -nDays %d",
                 args.getGitRepo().getAbsolutePath(),
                 args.getArcanOutDir(),
-                "master",
-                "1-1-1",
-                2);
+                args.branch,
+                args.startDate,
+                args.nDays);
     }
 
     /**
@@ -60,7 +60,7 @@ public class ArcanArgsHelper {
                 versionId,
                 args.getGitRepo().getAbsolutePath(),
                 args.getArcanOutDir(),
-                "master"
+                args.branch
         );
     }
 

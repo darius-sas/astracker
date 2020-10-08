@@ -54,6 +54,15 @@ public class Args {
     @Parameter(names = {"-singleVersion", "-sv"}, description = "Running Arcan for the most recent version only.")
     public boolean singleVersion = false;
 
+    @Parameter(names = "-branch", description = "What branch to analyse with Arcan.")
+    public String branch = "HEAD";
+
+    @Parameter(names = "-startDate", description = "The start date the Arcan analysis.")
+    public String startDate = "1-1-1";
+
+    @Parameter(names = "-nDays", description = "The minimum interval between the commits to analyse.")
+    public int nDays = 14;
+
     public boolean runTracker(){ return !disableTrackerRunner; }
 
     public boolean runProjectSizes(){ return runProjectSizes; }

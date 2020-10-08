@@ -103,7 +103,6 @@ public class ASTrackerWebRunner {
 
         } else {
             // Run the analysis from the beginning.
-            args = buildArgumentsList();
             analysis = new Analysis(args);
         }
 
