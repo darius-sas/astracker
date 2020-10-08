@@ -1,4 +1,5 @@
 # My ignore
+.idea
 /src/test/graphimages/*
 /data-analysis/*.pdf
 /data-analysis/*.csv
@@ -7,6 +8,7 @@
 /test-data/git-projects/*
 /arcan
 src/main/jib/arcan/*
+states
 output-folder*
 cloned-projects
 arcan-output
