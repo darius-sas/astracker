@@ -44,7 +44,7 @@ public class ArgumentMapper {
      *
      * @return String[]
      */
-    public String[] getArgumentsMapping() throws IOException, GitAPIException {
+    public String[] getArgumentsMapping()  {
         if (!this.requestParameters.containsKey("project") ||
             !this.requestParameters.containsKey("language")) {
             throw new IllegalArgumentException("project and language are required fields.");
@@ -58,7 +58,7 @@ public class ArgumentMapper {
      *
      * @return ArrayList<String>
      */
-    private ArrayList<String> mapParameters() throws IOException, GitAPIException {
+    private ArrayList<String> mapParameters(){
         // To store  the args as an ArrayList first
         array.clear();
 

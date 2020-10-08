@@ -1,6 +1,7 @@
-package org.rug.web.helpers;
+package org.rug.simpletests.web.helpers;
 
 import org.junit.jupiter.api.Test;
+import org.rug.web.helpers.RemoteProjectFetcher;
 
 import java.nio.file.Paths;
 

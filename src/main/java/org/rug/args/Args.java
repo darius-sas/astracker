@@ -19,16 +19,16 @@ public class Args {
     public File inputDirectory;
 
     @Parameter(names = {"-runArcan", "-rA"}, description = "Analyse files with Arcan. This parameter shall point to the JAR containing Arcan, without any parameters. Ex. ./path/to/Arcan.jar.")
-    private String runArcan = null;
+    public String runArcan = null;
 
     @Parameter(names = {"-doNotRunTracker", "-dRT"}, description = "Do not execute the tracking algorithm runner.")
-    private boolean disableTrackerRunner = false;
+    public boolean disableTrackerRunner = false;
 
     @Parameter(names = {"-runProjectSize", "-rS"}, description = "Whether to run the project size runner.")
-    private boolean runProjectSizes = false;
+    public boolean runProjectSizes = false;
 
     @Parameter(names = {"-runFanInFanOut", "-rF"}, description = "Whether to run the fan in and fan out counter.")
-    private boolean runFanInFanOutCounter = false;
+    public boolean runFanInFanOutCounter = false;
 
     @Parameter(names = {"-showArcanOutput", "-sAO"}, description = "Whether or not to show Arcan's output to the console.")
     public boolean showArcanOutput = false;
