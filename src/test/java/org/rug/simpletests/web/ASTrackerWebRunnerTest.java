@@ -1,18 +1,27 @@
 package org.rug.simpletests.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.web.ASTrackerWebRunner;
 import org.rug.web.WebAnalysisController;
+import org.rug.web.credentials.Credentials;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ASTrackerWebRunnerTest {
@@ -24,7 +33,7 @@ public class ASTrackerWebRunnerTest {
         this.requestParameters = new HashMap<>();
         this.requestParameters.put("project", "https://github.com/darius-sas/pyne.git");
         this.requestParameters.put("language", "java");
-        this.asTrackerWebRunner = new ASTrackerWebRunner(this.requestParameters);
+        this.asTrackerWebRunner = new ASTrackerWebRunner(this.requestParameters, Credentials.noCredentials());
 
         FileSystemUtils.deleteRecursively(Paths.get("./states/pyne").toFile());
 
@@ -35,10 +44,33 @@ public class ASTrackerWebRunnerTest {
         assertTrue(Files.exists(Paths.get("./output-folder/trackASOutput/pyne")));
         assertEquals("pyne", this.asTrackerWebRunner.getProjectName());
 
+        this.asTrackerWebRunner = new ASTrackerWebRunner(this.requestParameters, Credentials.noCredentials());
         assertEquals(WebAnalysisController.Result.SKIPPED, asTrackerWebRunner.run());
         assertTrue(
                 FileSystemUtils.deleteRecursively(Paths.get("./states/pyne").toFile()),
                 "The folder was not deleted after performing the analysis."
         );
+    }
+
+    @Test
+    void shouldFetchPrivateProject() throws JsonProcessingException {
+        var createPersonUrl = "http://localhost:8082/spring-rest/createPerson";
+        var updatePersonUrl = "http://localhost:8082/spring-rest/updatePerson";
+        var restTemplate = new RestTemplate();
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var credentialsJSON = new JSONObject();
+        credentialsJSON.put("username", "my-username");
+        credentialsJSON.put("password", "my-password");
+        HttpEntity<String> request =
+                new HttpEntity<>(credentialsJSON.toString(), headers);
+
+        ResponseEntity<String> responseEntityStr = restTemplate.
+                postForEntity(createPersonUrl, request, String.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(responseEntityStr.getBody());
+
+        assertNotNull(responseEntityStr.getBody());
+        assertNotNull(root.path("name").asText());
     }
 }

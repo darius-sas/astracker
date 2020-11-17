@@ -9,6 +9,7 @@ import org.rug.data.project.IProject;
 import org.rug.persistence.PersistenceHub;
 import org.rug.statefulness.ASmellTrackerStateManager;
 import org.rug.statefulness.ProjectStateManager;
+import org.rug.web.credentials.Credentials;
 import org.rug.web.helpers.ArgumentMapper;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class ASTrackerWebRunner {
     public static Path arcanOutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "arcanOutput");
     public static Path trackASoutput = Paths.get(outputDirectory.toAbsolutePath().toString(), "trackASOutput");;
 
-    public ASTrackerWebRunner(Map<String, String> requestParameter) {
+    public ASTrackerWebRunner(Map<String, String> requestParameter, Credentials credentials) {
         try {
             if (Files.notExists(outputDirectory)) {
                 Files.createDirectory(outputDirectory);
@@ -62,7 +63,7 @@ public class ASTrackerWebRunner {
             logger.error("Could not create working directories: {}", e.getMessage());
         }
 
-        this.mapper = new ArgumentMapper(arcanJavaJar, arcanCppJar, outputDirectory, clonedReposDirectory, requestParameter);
+        this.mapper = new ArgumentMapper(arcanJavaJar, arcanCppJar, outputDirectory, clonedReposDirectory, requestParameter, credentials);
     }
 
     /**
@@ -95,7 +96,7 @@ public class ASTrackerWebRunner {
             }
 
             // initialize an ASmellTracker object from the project state
-            var lastVersionAnalysed = project.versions().first();
+            var lastVersionAnalysed = project.versions().first(); // the first version is the first non-analysed version
             var aSmellTracker = aSmellTrackerStateManager.loadState(project, lastVersionAnalysed);
             logger.info("The ASmellTrackerStateManager has been successfully loaded.");
             analysis = new Analysis(args, aSmellTracker, project);

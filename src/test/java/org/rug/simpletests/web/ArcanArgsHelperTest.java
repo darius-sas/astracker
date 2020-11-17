@@ -35,7 +35,7 @@ public class ArcanArgsHelperTest {
     @Test
     void testGetArguments() {
         var expectedString = String.format(
-                "-git -p %s -out %s -branch master -startDate 1-1-1 -nWeeks 2",
+                "-git -p %s -out %s -branch HEAD -startDate 1-1-1 -nDays 14",
                 Paths.get(String.valueOf(inputDir), "pyne").toAbsolutePath(),
                 arcanOutput.toAbsolutePath()
         );
@@ -57,7 +57,7 @@ public class ArcanArgsHelperTest {
         this.args.singleVersion = true;
 
         var expectedString = String.format(
-                " -versionId %s -p %s -out %s -branch master",
+                "-versionId %s -p %s -out %s -branch HEAD",
                 versionId,
                 Paths.get(String.valueOf(inputDir), "pyne").toAbsolutePath(),
                 arcanOutput.toAbsolutePath()

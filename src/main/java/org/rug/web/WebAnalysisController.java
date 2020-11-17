@@ -1,11 +1,9 @@
 package org.rug.web;
 
+import org.rug.web.credentials.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,12 +27,13 @@ public class WebAnalysisController {
      * @return String
      * @throws IOException
      */
-    @RequestMapping(value = {"/analyse"}, method = RequestMethod.GET,  produces={ "application/json"})
+    @RequestMapping(value = {"/analyse"}, method = {RequestMethod.GET, RequestMethod.POST},  produces={ "application/json"})
     public ResultResponse analyse(
             @RequestParam Map<String,String> requestParameters,
+            @RequestBody Credentials credentials,
             HttpServletResponse response) {
 
-        var runner = new ASTrackerWebRunner(requestParameters);
+        var runner = new ASTrackerWebRunner(requestParameters, credentials);
         ResultResponse result = new ResultResponse();
         try {
             long start = java.lang.System.nanoTime();

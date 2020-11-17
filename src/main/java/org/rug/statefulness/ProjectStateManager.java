@@ -64,9 +64,9 @@ public class ProjectStateManager {
      * @throws IOException if the serialization fails
      */
     public void saveState(IProject project) throws IOException {
-        Optional<IVersion> firstVersion = project.versions().stream().findFirst();
-        if (firstVersion.isPresent()) {
-            saveState(firstVersion.get());
+        if (!project.versions().isEmpty()) {
+            IVersion lastVersion = project.versions().last();
+            saveState(lastVersion);
         }
     }
 

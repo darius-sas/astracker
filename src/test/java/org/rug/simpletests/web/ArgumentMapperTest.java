@@ -4,6 +4,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.rug.web.credentials.Credentials;
 import org.rug.web.helpers.ArgumentMapper;
 
 import java.io.IOException;
@@ -34,7 +35,8 @@ public class ArgumentMapperTest {
                 Paths.get("arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar"),
                 Paths.get("./output-folder"),
                 Paths.get("./cloned-projects"),
-                this.requestParameters
+                this.requestParameters,
+                Credentials.noCredentials()
         );
 
         String[] expectedMapping = {
@@ -67,7 +69,8 @@ public class ArgumentMapperTest {
                 Paths.get("arcan/Arcan-c-1.0.2-RELEASE-jar-with-dependencies.jar"),
                 Paths.get("./output-folder"),
                 Paths.get("./cloned-projects"),
-                singleVersionParams
+                singleVersionParams,
+                Credentials.noCredentials()
         );
         String[] expectedMapping = {
                 "-o",

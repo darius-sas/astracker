@@ -2,9 +2,8 @@ package org.rug.web.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import org.rug.web.credentials.Credentials;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,6 +19,7 @@ public class ArgumentMapper {
     private ArrayList<String> array;
     private RemoteProjectFetcher fetcher;
     private String projectName;
+    private Credentials credentials;
 
     private Path arcanJavaJarPath;
     private Path arcanCJarPath;
@@ -29,12 +29,14 @@ public class ArgumentMapper {
                           Path arcanCJarPath,
                           Path outputFolderPath,
                           Path clonedRepoDirectory,
-                          Map<String,String> requestParameters) {
+                          Map<String,String> requestParameters,
+                          Credentials credentials) {
         this.arcanJavaJarPath = arcanJavaJarPath;
         this.arcanCJarPath = arcanCJarPath;
         this.outputFolderPath = outputFolderPath;
         this.fetcher = new RemoteProjectFetcher(clonedRepoDirectory);
         this.requestParameters = requestParameters;
+        this.credentials = credentials;
         array = new ArrayList<>();
     }
 
@@ -133,12 +135,13 @@ public class ArgumentMapper {
                             .equalsIgnoreCase("java")
                             ? arcanJavaJarPath.toString()
                             : arcanCJarPath.toString());
-                    var projectInputDir = fetcher.getProjectPath(linkOrName);
+                    var projectInputDir = fetcher.fetchProject(linkOrName, credentials);
                     array.add("-gitRepo");
                     array.add(projectInputDir.toString());
                     break;
 
                 // Used to analyse only a single version with Arcan
+                case "single":
                 case "singleVersion":
                     array.add("-singleVersion");
                     break;
@@ -154,8 +157,27 @@ public class ArgumentMapper {
                     array.add(requestParameters.get(key));
                     break;
 
+                case "interval":
+                case "intervalDays":
+                case "daysInterval":
+                case "days":
+                case "nDays":
+                    array.add("-nDays");
+                    array.add(requestParameters.get(key));
+                    break;
+
                 case "startDate":
                     array.add("-startDate");
+                    array.add(requestParameters.get(key));
+                    break;
+
+                case "username":
+                    array.add("-username");
+                    array.add(requestParameters.get(key));
+                    break;
+
+                case "password":
+                    array.add("-password");
                     array.add(requestParameters.get(key));
                     break;
 

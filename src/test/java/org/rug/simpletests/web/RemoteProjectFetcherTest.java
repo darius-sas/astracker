@@ -3,6 +3,7 @@ package org.rug.simpletests.web;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.rug.web.credentials.Credentials;
 import org.rug.web.helpers.RemoteProjectFetcher;
 
 import java.io.File;
@@ -25,18 +26,18 @@ public class RemoteProjectFetcherTest {
     @Test
     void testGetProjectPath() {
         var expectedPath = Paths.get(clonedReposDirectory.toAbsolutePath().toString(), "pyne");
-
+        Credentials credentials = Credentials.noCredentials();
         assertEquals(
                 expectedPath,
-                remoteProjectFetcher.getProjectPath("https://github.com/darius-sas/pyne.git")
+                remoteProjectFetcher.fetchProject("https://github.com/darius-sas/pyne.git", credentials)
         );
         assertEquals(
                 expectedPath,
-                remoteProjectFetcher.getProjectPath("pyne")
+                remoteProjectFetcher.fetchProject("pyne", credentials)
         );
         assertNotEquals(
                 expectedPath,
-                remoteProjectFetcher.getProjectPath("github.com/darius-sas/pyne.git")
+                remoteProjectFetcher.fetchProject("github.com/darius-sas/pyne.git", credentials)
         );
     }
 

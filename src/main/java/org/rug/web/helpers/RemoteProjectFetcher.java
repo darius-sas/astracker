@@ -2,6 +2,9 @@ package org.rug.web.helpers;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.rug.web.credentials.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,27 +28,29 @@ public class RemoteProjectFetcher {
     /**
      * Helper class that will take a path as an argument, and will return a Path object
      * which holds the location of the project to be analysed.
-     *
-     * @param linkOrName
-     * @return
-     * @throws IOException
-     * @throws GitAPIException
      */
-    public Path getProjectPath(String linkOrName) {
+    public Path fetchProject(String linkOrName, Credentials credentials) {
         if (this.isValidGitLink(linkOrName)) {
             var name = getProjectName(linkOrName);
             var path = Paths.get(destination.toAbsolutePath().toString(), name);
             try {
+                CredentialsProvider credentialsProvider = getCredentialsProvider(credentials);
                 if (!this.checkIfAlreadyCloned(path.toFile())) {
                     // The project is not present locally, clone it from the remote repository.
                     var git = Git.cloneRepository()
                             .setURI(linkOrName)
+                            .setCredentialsProvider(credentialsProvider)
+                            .setRemote("origin")
                             .setDirectory(path.toFile()).call();
                     git.close();
                 } else {
                     // The project has been cloned before, update the branch to the latest version.
                     var git = Git.open(path.toFile());
-                    var result = git.pull().setRemote("origin").call();
+                    var result = git.pull()
+                            .setRemoteBranchName("HEAD")
+                            .setCredentialsProvider(credentialsProvider)
+                            .setRemote("origin")
+                            .call();
                     if (!result.isSuccessful()) {
                         logger.warn(String.format(
                                 "Was not able to pull the latest changes from the repository %s",
@@ -64,6 +69,16 @@ public class RemoteProjectFetcher {
             }
         }
         return Paths.get(destination.toAbsolutePath().toString(), linkOrName);
+    }
+
+    private CredentialsProvider getCredentialsProvider(Credentials credentials) {
+        if (credentials.getAuthToken() != null && !credentials.getAuthToken().isEmpty()) {
+            return new UsernamePasswordCredentialsProvider(credentials.getAuthToken(), "");
+        }
+        if(credentials.getUsername() != null && credentials.getPassword() != null){
+            return new UsernamePasswordCredentialsProvider(credentials.getUsername(), credentials.getPassword());
+        }
+        return CredentialsProvider.getDefault();
     }
 
     /**

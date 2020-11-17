@@ -1,6 +1,7 @@
 package org.rug.simpletests.web.helpers;
 
 import org.junit.jupiter.api.Test;
+import org.rug.web.credentials.Credentials;
 import org.rug.web.helpers.ArgumentMapper;
 
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ class ArgumentMapperTest {
         var inputDir = Paths.get(outputFolder.toString(), "arcanOutput", "pyne");
 
 
-        ArgumentMapper mapper = new ArgumentMapper(arcanPath, arcanCPath, outputFolder, Paths.get("cloned-projects"), args);
+        ArgumentMapper mapper = new ArgumentMapper(arcanPath, arcanCPath, outputFolder, Paths.get("cloned-projects"), args, Credentials.noCredentials());
         assertTrue(mapper.getArgumentsMapping().length > 0);
         inputDir.toFile().delete();
         Paths.get(outputFolder.toString(), "arcanOutput").toFile().delete();

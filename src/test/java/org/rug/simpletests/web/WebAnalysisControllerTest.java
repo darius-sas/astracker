@@ -3,6 +3,7 @@ package org.rug.simpletests.web;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.rug.web.WebAnalysisController;
+import org.rug.web.credentials.Credentials;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.util.FileSystemUtils;
 
@@ -18,6 +19,7 @@ public class WebAnalysisControllerTest {
 
     @Test
     void testWebAnalysisControllerPyne() {
+        Credentials credentials = Credentials.noCredentials();
         var requestParameters = new HashMap<String, String>();
         requestParameters.put("project", "https://github.com/darius-sas/pyne.git");
         requestParameters.put("language", "java");
@@ -27,11 +29,11 @@ public class WebAnalysisControllerTest {
         FileSystemUtils.deleteRecursively(Paths.get("./states/pyne").toFile());
 
         var response = new MockHttpServletResponse();
-        var resultResponse = webAnalysisController.analyse(requestParameters, response);
+        var resultResponse = webAnalysisController.analyse(requestParameters, credentials, response);
         assertEquals(WebAnalysisController.Result.SUCCESS, resultResponse.getResult());
         assertEquals("No message.", resultResponse.getMessage());
 
-        var secondResultResponse = webAnalysisController.analyse(requestParameters, response);
+        var secondResultResponse = webAnalysisController.analyse(requestParameters, credentials, response);
         assertEquals(WebAnalysisController.Result.SKIPPED, secondResultResponse.getResult());
         assertEquals("No message.", resultResponse.getMessage());
 
