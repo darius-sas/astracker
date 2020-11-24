@@ -52,25 +52,4 @@ public class ASTrackerWebRunnerTest {
         );
     }
 
-    @Test
-    void shouldFetchPrivateProject() throws JsonProcessingException {
-        var createPersonUrl = "http://localhost:8082/spring-rest/createPerson";
-        var updatePersonUrl = "http://localhost:8082/spring-rest/updatePerson";
-        var restTemplate = new RestTemplate();
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var credentialsJSON = new JSONObject();
-        credentialsJSON.put("username", "my-username");
-        credentialsJSON.put("password", "my-password");
-        HttpEntity<String> request =
-                new HttpEntity<>(credentialsJSON.toString(), headers);
-
-        ResponseEntity<String> responseEntityStr = restTemplate.
-                postForEntity(createPersonUrl, request, String.class);
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root = objectMapper.readTree(responseEntityStr.getBody());
-
-        assertNotNull(responseEntityStr.getBody());
-        assertNotNull(root.path("name").asText());
-    }
 }

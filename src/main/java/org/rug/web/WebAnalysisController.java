@@ -22,17 +22,15 @@ public class WebAnalysisController {
      * 'project' -> the link to the GitHub repository (ending in .git)
      * 'language' -> the language of the project (eg. java)
      *
-     * @param requestParameters
-     * @param response
-     * @return String
-     * @throws IOException
      */
     @RequestMapping(value = {"/analyse"}, method = {RequestMethod.GET, RequestMethod.POST},  produces={ "application/json"})
     public ResultResponse analyse(
             @RequestParam Map<String,String> requestParameters,
-            @RequestBody Credentials credentials,
+            @RequestBody(required = false) Credentials credentials,
             HttpServletResponse response) {
-
+        if (credentials == null){
+            credentials = Credentials.noCredentials();
+        }
         var runner = new ASTrackerWebRunner(requestParameters, credentials);
         ResultResponse result = new ResultResponse();
         try {
@@ -55,7 +53,7 @@ public class WebAnalysisController {
         return result;
     }
 
-    public final class ResultResponse{
+    public static final class ResultResponse{
         String project;
         Result result;
         long timeElapsed;
@@ -67,6 +65,7 @@ public class WebAnalysisController {
             this.project = project;
             this.result = result;
             this.timeElapsed = timeElapsed;
+            this.message = message;
         }
 
         public String getMessage() {

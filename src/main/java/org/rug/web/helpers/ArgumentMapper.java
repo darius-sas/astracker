@@ -67,6 +67,8 @@ public class ArgumentMapper {
         array.add("-o");
         array.add(outputFolderPath.toString());
 
+        array.add("-singleVersion");
+
         for (String key : requestParameters.keySet()) {
             switch (key) {
                 case "help":
@@ -141,9 +143,10 @@ public class ArgumentMapper {
                     break;
 
                 // Used to analyse only a single version with Arcan
-                case "single":
                 case "singleVersion":
-                    array.add("-singleVersion");
+                    if (requestParameters.get("singleVersion").equals("false")) {
+                        array.remove("-singleVersion");
+                    }
                     break;
 
                 case "runTracker":
@@ -168,16 +171,6 @@ public class ArgumentMapper {
 
                 case "startDate":
                     array.add("-startDate");
-                    array.add(requestParameters.get(key));
-                    break;
-
-                case "username":
-                    array.add("-username");
-                    array.add(requestParameters.get(key));
-                    break;
-
-                case "password":
-                    array.add("-password");
                     array.add(requestParameters.get(key));
                     break;
 
