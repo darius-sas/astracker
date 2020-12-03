@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -31,9 +32,9 @@ public class WebAnalysisController {
         if (credentials == null){
             credentials = Credentials.noCredentials();
         }
-        var runner = new ASTrackerWebRunner(requestParameters, credentials);
         ResultResponse result = new ResultResponse();
         try {
+            var runner = new ASTrackerWebRunner(requestParameters, credentials);
             long start = java.lang.System.nanoTime();
             var analysisResult = runner.run();
             long end = java.lang.System.nanoTime();
@@ -48,6 +49,7 @@ public class WebAnalysisController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             result.setResult(Result.FAILED);
             result.setMessage(e.getMessage());
+            result.setException(e);
             result.setTimeElapsed(0);
         }
         return result;
@@ -58,6 +60,7 @@ public class WebAnalysisController {
         Result result;
         long timeElapsed;
         String message;
+        String stackTrace;
 
         public ResultResponse(){}
 
@@ -105,6 +108,13 @@ public class WebAnalysisController {
             long seconds = Math.abs(Math.round((elapsedMinutes - minutes) * 100 * 0.6d));
             return String.format("%d minutes %s seconds", minutes, seconds);
         }
+
+        public void setException(Exception exception) {
+            ByteArrayOutputStream bis = new ByteArrayOutputStream();
+            exception.printStackTrace(new PrintWriter(bis));
+            this.stackTrace = bis.toString();
+        }
+
     }
 
     public enum Result{
