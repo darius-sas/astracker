@@ -11,6 +11,8 @@ public class Credentials {
     private String username;
     private String password;
 
+    public Credentials(){}
+
     public Credentials(String authToken) {
         this.authToken = authToken;
     }

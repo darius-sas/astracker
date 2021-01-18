@@ -29,7 +29,7 @@ public class RemoteProjectFetcher {
      * Helper class that will take a path as an argument, and will return a Path object
      * which holds the location of the project to be analysed.
      */
-    public Path fetchProject(String linkOrName, Credentials credentials) {
+    public Path fetchProject(String linkOrName, Credentials credentials) throws IOException, GitAPIException {
         if (this.isValidGitLink(linkOrName)) {
             var name = getProjectName(linkOrName);
             var path = Paths.get(destination.toAbsolutePath().toString(), name);
@@ -65,7 +65,7 @@ public class RemoteProjectFetcher {
                         "Was not able to access the given repository %s",
                         name
                 ));
-                return null;
+                throw e;
             }
         }
         return Paths.get(destination.toAbsolutePath().toString(), linkOrName);

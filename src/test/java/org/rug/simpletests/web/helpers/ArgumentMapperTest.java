@@ -1,9 +1,11 @@
 package org.rug.simpletests.web.helpers;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 import org.rug.web.credentials.Credentials;
 import org.rug.web.helpers.ArgumentMapper;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ArgumentMapperTest {
 
     @Test
-    void shouldCreateAllOptions() {
+    void shouldCreateAllOptions() throws IOException, GitAPIException {
         Map<String, String> args = new HashMap<>();
         args.put("help", "");
         args.put("printSimilarity", "");

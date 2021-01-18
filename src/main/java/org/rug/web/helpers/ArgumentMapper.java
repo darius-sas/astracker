@@ -2,8 +2,10 @@ package org.rug.web.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.rug.web.credentials.Credentials;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,7 +48,7 @@ public class ArgumentMapper {
      *
      * @return String[]
      */
-    public String[] getArgumentsMapping()  {
+    public String[] getArgumentsMapping() throws IOException, GitAPIException {
         if (!this.requestParameters.containsKey("project") ||
             !this.requestParameters.containsKey("language")) {
             throw new IllegalArgumentException("project and language are required fields.");
@@ -60,7 +62,7 @@ public class ArgumentMapper {
      *
      * @return ArrayList<String>
      */
-    private ArrayList<String> mapParameters(){
+    private ArrayList<String> mapParameters() throws IOException, GitAPIException {
         // To store  the args as an ArrayList first
         array.clear();
 

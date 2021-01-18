@@ -1,5 +1,6 @@
 package org.rug.simpletests.web;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -7,6 +8,7 @@ import org.rug.web.credentials.Credentials;
 import org.rug.web.helpers.RemoteProjectFetcher;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -24,7 +26,7 @@ public class RemoteProjectFetcherTest {
     }
 
     @Test
-    void testGetProjectPath() {
+    void testGetProjectPath() throws IOException, GitAPIException {
         var expectedPath = Paths.get(clonedReposDirectory.toAbsolutePath().toString(), "pyne");
         Credentials credentials = Credentials.noCredentials();
         assertEquals(

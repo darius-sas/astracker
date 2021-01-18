@@ -29,10 +29,13 @@ public class WebAnalysisController {
             @RequestParam Map<String,String> requestParameters,
             @RequestBody(required = false) Credentials credentials,
             HttpServletResponse response) {
+        ResultResponse result = new ResultResponse();
         if (credentials == null){
             credentials = Credentials.noCredentials();
+            result.setHasCredentials(false);
+        }else{
+            result.setHasCredentials(true);
         }
-        ResultResponse result = new ResultResponse();
         try {
             var runner = new ASTrackerWebRunner(requestParameters, credentials);
             long start = java.lang.System.nanoTime();
@@ -61,6 +64,7 @@ public class WebAnalysisController {
         long timeElapsed;
         String message;
         String stackTrace;
+        boolean hasCredentials;
 
         public ResultResponse(){}
 
@@ -100,6 +104,18 @@ public class WebAnalysisController {
 
         public Result getResult() {
             return result;
+        }
+
+        public boolean getHasCredentials() {
+            return hasCredentials;
+        }
+
+        public void setHasCredentials(boolean hasCredentials) {
+            this.hasCredentials = hasCredentials;
+        }
+
+        public String getStackTrace() {
+            return stackTrace;
         }
 
         public String getTimeElapsed() {
